@@ -28,6 +28,28 @@ describe("OllamaConnector", () => {
     }
   });
 
+  it("uses thinking field when response field is empty", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          response: "",
+          thinking: "{\"headline\":\"Modern family dental care\"}"
+        }),
+        { status: 200 }
+      )
+    );
+
+    const connector = new OllamaConnector();
+    const result = await connector.generateJson<{ headline: string }>({
+      prompt: "Generate JSON."
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.headline).toBe("Modern family dental care");
+    }
+  });
+
   it("returns invalid_json error when JSON parsing fails", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(
       new Response(
@@ -87,7 +109,7 @@ describe("OllamaConnector", () => {
 
     const connector = new OllamaConnector({
       baseUrl: OLLAMA_BASE_URL,
-      model: "qwen3:8b"
+      model: "qwen3.6:35b"
     });
     await connector.generateJson<Record<string, unknown>>({
       prompt: "Generate JSON."

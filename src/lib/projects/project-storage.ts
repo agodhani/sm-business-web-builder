@@ -63,8 +63,28 @@ export async function writeStageArtifact(
   await writeJsonFile(filePath, artifact);
 }
 
+export async function writeNamedArtifact(
+  projectPaths: ProjectPaths,
+  fileName: string,
+  artifact: unknown
+) {
+  const filePath = path.join(projectPaths.artifactsDir, fileName);
+  await writeJsonFile(filePath, artifact);
+}
+
+export async function readNamedArtifact<T = unknown>(
+  projectPaths: ProjectPaths,
+  fileName: string
+): Promise<T> {
+  return readJsonFile<T>(path.join(projectPaths.artifactsDir, fileName));
+}
+
 export async function writePageData(projectPaths: ProjectPaths, pageData: unknown) {
   await writeJsonFile(projectPaths.pageDataPath, pageData);
+}
+
+export async function writePreviewMetadata(projectPaths: ProjectPaths, metadata: unknown) {
+  await writeJsonFile(projectPaths.previewMetadataPath, metadata);
 }
 
 export async function readJsonFile<T = unknown>(filePath: string): Promise<T> {

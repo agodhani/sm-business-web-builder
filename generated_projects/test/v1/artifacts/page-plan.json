@@ -1,0 +1,50 @@
+{
+  "selectedStyleId": "ibm",
+  "sections": [
+    {
+      "type": "hero",
+      "objective": "Introduce 'Dental' as a family dentist in Boston, MA, and prompt user engagement with a clear value proposition.",
+      "factualRequirements": [
+        "businessName",
+        "businessDescription",
+        "location.city",
+        "location.state"
+      ]
+    },
+    {
+      "type": "services",
+      "objective": "Present the core dental services offered to establish expertise and relevance.",
+      "factualRequirements": [
+        "services"
+      ]
+    },
+    {
+      "type": "about",
+      "objective": "Build trust by contextualizing the business description and location.",
+      "factualRequirements": [
+        "businessDescription",
+        "location.city",
+        "location.state"
+      ]
+    },
+    {
+      "type": "contact",
+      "objective": "Provide immediate and accessible ways for potential patients to reach the dental practice.",
+      "factualRequirements": [
+        "contact.phone",
+        "contact.email",
+        "location.city",
+        "location.state"
+      ]
+    },
+    {
+      "type": "footer",
+      "objective": "Close the page with clear attribution and contact recap.",
+      "factualRequirements": [
+        "businessName",
+        "contact.phone",
+        "contact.email"
+      ]
+    }
+  ]
+}

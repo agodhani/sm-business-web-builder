@@ -1,0 +1,19 @@
+{
+  "projectName": "test",
+  "businessName": "Dental",
+  "businessCategory": "Dental",
+  "businessDescription": "family dentist",
+  "services": [
+    "teeth cleaning",
+    "cavity removal"
+  ],
+  "contact": {
+    "phone": "111-111-1111",
+    "email": "hello@test.com"
+  },
+  "location": {
+    "city": "Boston",
+    "state": "MA"
+  },
+  "selectedStyleId": "ibm"
+}

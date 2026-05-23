@@ -3,18 +3,24 @@ import type { FieldErrors, WizardFormState } from "./types";
 type ReviewGenerateStepProps = {
   state: WizardFormState;
   onSubmit: () => Promise<void>;
+  onRetry: () => Promise<void>;
   submitting: boolean;
   submitError: string | null;
-  submitSuccessMessage: string | null;
+  generationStatusMessage: string | null;
+  failedStage: string | null;
+  canRetry: boolean;
   errors: FieldErrors;
 };
 
 export function ReviewGenerateStep({
   state,
   onSubmit,
+  onRetry,
   submitting,
   submitError,
-  submitSuccessMessage,
+  generationStatusMessage,
+  failedStage,
+  canRetry,
   errors
 }: ReviewGenerateStepProps) {
   return (
@@ -49,11 +55,17 @@ export function ReviewGenerateStep({
 
       {errors.submit ? <p className="field-error">{errors.submit}</p> : null}
       {submitError ? <p className="field-error">{submitError}</p> : null}
-      {submitSuccessMessage ? <p className="field-success">{submitSuccessMessage}</p> : null}
+      {generationStatusMessage ? <p className="field-success">{generationStatusMessage}</p> : null}
+      {failedStage ? <p className="field-error">Generation failed at stage: {failedStage}</p> : null}
 
       <button type="button" onClick={() => void onSubmit()} disabled={submitting} className="primary-button">
-        {submitting ? "Creating Project..." : "Create Project"}
+        {submitting ? "Running Generation..." : "Create And Generate"}
       </button>
+      {canRetry ? (
+        <button type="button" onClick={() => void onRetry()} disabled={submitting} className="secondary-button">
+          Retry Generation
+        </button>
+      ) : null}
     </section>
   );
 }

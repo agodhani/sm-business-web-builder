@@ -1,0 +1,20 @@
+{
+  "projectName": "Blue Peak Dental",
+  "businessName": "Blue Peak Dental",
+  "businessCategory": "Dental",
+  "businessDescription": "Family dentist",
+  "services": [
+    "teeth cleaning",
+    "cavity removal"
+  ],
+  "contact": {
+    "phone": "111-111-1111",
+    "email": "hello@test.com"
+  },
+  "location": {
+    "city": "Boston",
+    "state": "MA"
+  },
+  "styleId": "airbnb",
+  "images": []
+}

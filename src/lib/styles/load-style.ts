@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
+import { DESIGN_ROOT } from "../config";
 import { type StyleDefinition } from "../types/style";
 import { styleSchema } from "../validation/style-schema";
 import { resolveStyleTokens } from "./resolve-style-tokens";
@@ -71,4 +72,12 @@ export async function loadStyleFromDesignFile(filePath: string): Promise<LoadedS
     path: filePath,
     style
   };
+}
+
+export async function loadStyleById(
+  styleId: string,
+  designRoot: string = DESIGN_ROOT
+): Promise<LoadedStyle> {
+  const filePath = path.join(designRoot, styleId, "DESIGN.md");
+  return loadStyleFromDesignFile(filePath);
 }

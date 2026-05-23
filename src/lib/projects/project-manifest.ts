@@ -102,3 +102,20 @@ export function markManifestGenerated(
     nowIso
   );
 }
+
+export function getManifestStatusLabel(manifest: ProjectManifest): string {
+  if (manifest.status === "failed") {
+    return manifest.failedStage
+      ? `Failed at ${manifest.failedStage}`
+      : "Failed";
+  }
+  if (manifest.status === "generating") {
+    return manifest.currentStage
+      ? `Generating (${manifest.currentStage})`
+      : "Generating";
+  }
+  if (manifest.status === "generated") {
+    return "Generated";
+  }
+  return "Created";
+}

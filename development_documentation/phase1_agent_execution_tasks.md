@@ -377,17 +377,17 @@
 - `src/lib/llm/__tests__/ollama-connector.test.ts`
 
 **Steps:**
-- [ ] Define `LLMConnector` interface with a structured JSON generation method.
-- [ ] Implement `OllamaConnector` using `OLLAMA_BASE_URL` and `DEFAULT_OLLAMA_MODEL`.
-- [ ] Send prompts to Ollama with JSON output requested.
-- [ ] Parse JSON responses.
-- [ ] Return typed success and failure results.
-- [ ] Normalize provider errors into app-level error objects.
-- [ ] Add tests with mocked fetch for success, invalid JSON, non-200 response, and network failure.
+- [x] Define `LLMConnector` interface with a structured JSON generation method.
+- [x] Implement `OllamaConnector` using `OLLAMA_BASE_URL` and `DEFAULT_OLLAMA_MODEL`.
+- [x] Send prompts to Ollama with JSON output requested.
+- [x] Parse JSON responses.
+- [x] Return typed success and failure results.
+- [x] Normalize provider errors into app-level error objects.
+- [x] Add tests with mocked fetch for success, invalid JSON, non-200 response, and network failure.
 
 **Acceptance checks:**
-- [ ] `npm test -- ollama-connector` passes.
-- [ ] `npm run build` passes.
+- [x] `npm test -- ollama-connector` passes.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: add ollama llm connector`
@@ -408,17 +408,17 @@
 - `src/lib/generation/types.ts`
 
 **Steps:**
-- [ ] Define `SiteBrief`, `PagePlan`, `StoryRequirements`, and `StageResult` types.
-- [ ] Write brief prompt using raw wizard input.
-- [ ] Write page plan prompt using brief and selected style.
-- [ ] Write story prompt using page plan.
-- [ ] Write page-data prompt using all prior artifacts.
-- [ ] In every prompt, require factual grounding and no invented contact facts.
-- [ ] In page-data prompt, require fixed section types and ordering rules.
+- [x] Define `SiteBrief`, `PagePlan`, `StoryRequirements`, and `StageResult` types.
+- [x] Write brief prompt using raw wizard input.
+- [x] Write page plan prompt using brief and selected style.
+- [x] Write story prompt using page plan.
+- [x] Write page-data prompt using all prior artifacts.
+- [x] In every prompt, require factual grounding and no invented contact facts.
+- [x] In page-data prompt, require fixed section types and ordering rules.
 
 **Acceptance checks:**
-- [ ] `npm run build` passes.
-- [ ] Prompt files export pure functions with typed inputs and string output.
+- [x] `npm run build` passes.
+- [x] Prompt files export pure functions with typed inputs and string output.
 
 **Commit:**
 - `feat: define generation prompt contracts`
@@ -438,17 +438,17 @@
 - `src/lib/projects/project-storage.ts`
 
 **Steps:**
-- [ ] Read raw project input from disk.
-- [ ] Call the connector with the brief prompt.
-- [ ] Validate the brief contains business facts, services, contact, location, selected style, and optional fields.
-- [ ] Persist `brief.json`.
-- [ ] Update manifest stage status.
-- [ ] On failure, persist error metadata and failed stage.
+- [x] Read raw project input from disk.
+- [x] Call the connector with the brief prompt.
+- [x] Validate the brief contains business facts, services, contact, location, selected style, and optional fields.
+- [x] Persist `brief.json`.
+- [x] Update manifest stage status.
+- [x] On failure, persist error metadata and failed stage.
 
 **Acceptance checks:**
-- [ ] Unit test or mocked pipeline run creates `brief.json`.
-- [ ] Failed connector response marks `failedStage = "brief"`.
-- [ ] `npm run build` passes.
+- [x] Unit test or mocked pipeline run creates `brief.json`.
+- [x] Failed connector response marks `failedStage = "brief"`.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: add site brief generation stage`
@@ -465,20 +465,20 @@
 - `src/lib/generation/stages/create-page-plan.ts`
 
 **Steps:**
-- [ ] Load `brief.json`.
-- [ ] Load the selected style.
-- [ ] Generate a page plan with selected sections and ordering.
-- [ ] Omit `pricing` if no pricing input exists.
-- [ ] Omit `gallery` if no images exist.
-- [ ] Validate section types and ordering.
-- [ ] Persist `page-plan.json`.
-- [ ] Update manifest stage status.
+- [x] Load `brief.json`.
+- [x] Load the selected style.
+- [x] Generate a page plan with selected sections and ordering.
+- [x] Omit `pricing` if no pricing input exists.
+- [x] Omit `gallery` if no images exist.
+- [x] Validate section types and ordering.
+- [x] Persist `page-plan.json`.
+- [x] Update manifest stage status.
 
 **Acceptance checks:**
-- [ ] No-pricing input omits `pricing`.
-- [ ] No-image input omits `gallery`.
-- [ ] Invalid ordering fails the stage.
-- [ ] `npm run build` passes.
+- [x] No-pricing input omits `pricing`.
+- [x] No-image input omits `gallery`.
+- [x] Invalid ordering fails the stage.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: add page plan generation stage`
@@ -495,17 +495,17 @@
 - `src/lib/generation/stages/create-story-requirements.ts`
 
 **Steps:**
-- [ ] Load `page-plan.json`.
-- [ ] Generate story requirements per planned section.
-- [ ] Require each section to include copy intent and factual constraints.
-- [ ] Persist `story-requirements.json`.
-- [ ] Update manifest stage status.
-- [ ] Mark `failedStage = "story-requirements"` on failure.
+- [x] Load `page-plan.json`.
+- [x] Generate story requirements per planned section.
+- [x] Require each section to include copy intent and factual constraints.
+- [x] Persist `story-requirements.json`.
+- [x] Update manifest stage status.
+- [x] Mark `failedStage = "story-requirements"` on failure.
 
 **Acceptance checks:**
-- [ ] Mocked stage persists story requirements.
-- [ ] Every planned section has a corresponding story requirement.
-- [ ] `npm run build` passes.
+- [x] Mocked stage persists story requirements.
+- [x] Every planned section has a corresponding story requirement.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: add story requirements generation stage`
@@ -522,20 +522,20 @@
 - `src/lib/generation/stages/create-page-data.ts`
 
 **Steps:**
-- [ ] Load brief, page plan, story requirements, and selected style.
-- [ ] Generate final `GeneratedPageData`.
-- [ ] Validate against `page-data-schema`.
-- [ ] Reject unsupported sections.
-- [ ] Reject invalid ordering.
-- [ ] Persist `page-data.json`.
-- [ ] Update manifest status to generated when successful.
-- [ ] Mark `failedStage = "page-data"` on failure.
+- [x] Load brief, page plan, story requirements, and selected style.
+- [x] Generate final `GeneratedPageData`.
+- [x] Validate against `page-data-schema`.
+- [x] Reject unsupported sections.
+- [x] Reject invalid ordering.
+- [x] Persist `page-data.json`.
+- [x] Update manifest status to generated when successful.
+- [x] Mark `failedStage = "page-data"` on failure.
 
 **Acceptance checks:**
-- [ ] Valid mocked response persists `page-data.json`.
-- [ ] Invalid section type fails validation.
-- [ ] Invalid section order fails validation.
-- [ ] `npm run build` passes.
+- [x] Valid mocked response persists `page-data.json`.
+- [x] Invalid section type fails validation.
+- [x] Invalid section order fails validation.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: add final page data generation stage`
@@ -557,20 +557,20 @@
 - `src/app/api/projects/__tests__/retry-route.test.ts`
 
 **Steps:**
-- [ ] Compose stages in this order: brief, page plan, story requirements, page data.
-- [ ] Update manifest before and after each stage.
-- [ ] Return generated status and preview path on success.
-- [ ] Return failed stage on failure.
-- [ ] Preserve successful artifacts from stages before the failure.
-- [ ] Implement retry as full pipeline rerun from the beginning.
-- [ ] Add API route for first generation.
-- [ ] Add API route for retry.
-- [ ] Add tests for successful pipeline, each stage failure, and retry.
+- [x] Compose stages in this order: brief, page plan, story requirements, page data.
+- [x] Update manifest before and after each stage.
+- [x] Return generated status and preview path on success.
+- [x] Return failed stage on failure.
+- [x] Preserve successful artifacts from stages before the failure.
+- [x] Implement retry as full pipeline rerun from the beginning.
+- [x] Add API route for first generation.
+- [x] Add API route for retry.
+- [x] Add tests for successful pipeline, each stage failure, and retry.
 
 **Acceptance checks:**
-- [ ] `npm test -- pipeline generate-route retry-route` passes.
-- [ ] Failed run records failed stage in manifest.
-- [ ] Retry reruns all stages.
+- [x] `npm test -- pipeline generate-route retry-route` passes.
+- [x] Failed run records failed stage in manifest.
+- [x] Retry reruns all stages.
 
 **Commit:**
 - `feat: orchestrate generation pipeline`
@@ -595,17 +595,17 @@
 - `src/components/preview/__tests__/generated-page.test.tsx`
 
 **Steps:**
-- [ ] Create one React component per supported section type.
-- [ ] Render sections in the order provided by page data.
-- [ ] Apply colors, typography, spacing, and component hints from selected style.
-- [ ] Allow missing optional sections.
-- [ ] Render user images from project assets.
-- [ ] Ensure desktop and mobile layouts are responsive.
-- [ ] Add component tests for full page, no-pricing, and no-gallery cases.
+- [x] Create one React component per supported section type.
+- [x] Render sections in the order provided by page data.
+- [x] Apply colors, typography, spacing, and component hints from selected style.
+- [x] Allow missing optional sections.
+- [x] Render user images from project assets.
+- [x] Ensure desktop and mobile layouts are responsive.
+- [x] Add component tests for full page, no-pricing, and no-gallery cases.
 
 **Acceptance checks:**
-- [ ] `npm test -- generated-page` passes.
-- [ ] `npm run build` passes.
+- [x] `npm test -- generated-page` passes.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: render generated page data`
@@ -624,17 +624,17 @@
 - `src/lib/projects/project-query.ts`
 
 **Steps:**
-- [ ] Load manifest, selected style, and `page-data.json` from disk.
-- [ ] Render `/projects/<projectSlug>` using `GeneratedPage`.
-- [ ] Serve assets from the project workspace or expose a route that reads project assets.
-- [ ] Return a useful empty/error state if page data is missing.
-- [ ] Ensure only the builder app serves previews.
+- [x] Load manifest, selected style, and `page-data.json` from disk.
+- [x] Render `/projects/<projectSlug>` using `GeneratedPage`.
+- [x] Serve assets from the project workspace or expose a route that reads project assets.
+- [x] Return a useful empty/error state if page data is missing.
+- [x] Ensure only the builder app serves previews.
 
 **Acceptance checks:**
-- [ ] Existing generated project opens at `/projects/<projectSlug>`.
-- [ ] Refreshing the preview page loads from disk.
-- [ ] Missing page data shows a clear status state.
-- [ ] `npm run build` passes.
+- [x] Existing generated project opens at `/projects/<projectSlug>`.
+- [x] Refreshing the preview page loads from disk.
+- [x] Missing page data shows a clear status state.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: serve generated previews from builder`
@@ -653,18 +653,18 @@
 - `src/app/page.tsx`
 
 **Steps:**
-- [ ] On final submit, call `POST /api/projects`.
-- [ ] Use returned `projectSlug` to call generate route.
-- [ ] Show active generation status while pipeline runs.
-- [ ] On success, navigate to `/projects/<projectSlug>`.
-- [ ] On failure, show failed stage and retry action.
-- [ ] Do not expose intermediate artifact editing.
+- [x] On final submit, call `POST /api/projects`.
+- [x] Use returned `projectSlug` to call generate route.
+- [x] Show active generation status while pipeline runs.
+- [x] On success, navigate to `/projects/<projectSlug>`.
+- [x] On failure, show failed stage and retry action.
+- [x] Do not expose intermediate artifact editing.
 
 **Acceptance checks:**
-- [ ] Happy path goes from wizard submit to preview.
-- [ ] Failed generation shows failed stage.
-- [ ] Retry action reruns generation.
-- [ ] `npm run build` passes.
+- [x] Happy path goes from wizard submit to preview.
+- [x] Failed generation shows failed stage.
+- [x] Retry action reruns generation.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: connect wizard submit to generation`
@@ -683,17 +683,17 @@
 - `src/lib/projects/project-query.ts`
 
 **Steps:**
-- [ ] Load project summaries from manifests.
-- [ ] Show project name, selected style, last updated time, and latest build status.
-- [ ] Link generated projects to `/projects/<projectSlug>`.
-- [ ] Show retry action for failed projects.
-- [ ] Keep project list lightweight; do not add editing controls.
+- [x] Load project summaries from manifests.
+- [x] Show project name, selected style, last updated time, and latest build status.
+- [x] Link generated projects to `/projects/<projectSlug>`.
+- [x] Show retry action for failed projects.
+- [x] Keep project list lightweight; do not add editing controls.
 
 **Acceptance checks:**
-- [ ] Homepage shows generated projects.
-- [ ] Reopen link renders preview from disk.
-- [ ] Failed project shows retry option.
-- [ ] `npm run build` passes.
+- [x] Homepage shows generated projects.
+- [x] Reopen link renders preview from disk.
+- [x] Failed project shows retry option.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: list and reopen generated projects`
@@ -713,17 +713,17 @@
 - `src/lib/projects/project-manifest.ts`
 
 **Steps:**
-- [ ] Display `currentStage` while generation is running.
-- [ ] Display `failedStage` after failure.
-- [ ] Display retry action after failed generation.
-- [ ] Display generated status after success.
-- [ ] Ensure UI reads persisted manifest state.
+- [x] Display `currentStage` while generation is running.
+- [x] Display `failedStage` after failure.
+- [x] Display retry action after failed generation.
+- [x] Display generated status after success.
+- [x] Ensure UI reads persisted manifest state.
 
 **Acceptance checks:**
-- [ ] Simulated failure shows failed stage.
-- [ ] Retry updates manifest state.
-- [ ] Successful generation shows generated status and preview.
-- [ ] `npm run build` passes.
+- [x] Simulated failure shows failed stage.
+- [x] Retry updates manifest state.
+- [x] Successful generation shows generated status and preview.
+- [x] `npm run build` passes.
 
 **Commit:**
 - `feat: expose generation status`
@@ -740,22 +740,22 @@
 - Only modify files needed to fix defects found during verification.
 
 **Test scenarios:**
-- [ ] Generate a project with required fields only.
-- [ ] Generate a project with pricing and images.
-- [ ] Generate a project without pricing and confirm no `pricing` section.
-- [ ] Generate a project without images and confirm no `gallery` section.
-- [ ] Reopen a generated project from the homepage.
-- [ ] Refresh a preview route and confirm it loads from disk.
-- [ ] Simulate an `Ollama` failure and confirm failed stage is visible.
-- [ ] Retry failed generation and confirm full pipeline reruns.
-- [ ] Check desktop layout.
-- [ ] Check mobile layout.
+- [x] Generate a project with required fields only.
+- [x] Generate a project with pricing and images.
+- [x] Generate a project without pricing and confirm no `pricing` section.
+- [x] Generate a project without images and confirm no `gallery` section.
+- [x] Reopen a generated project from the homepage.
+- [x] Refresh a preview route and confirm it loads from disk.
+- [x] Simulate an `Ollama` failure and confirm failed stage is visible.
+- [x] Retry failed generation and confirm full pipeline reruns.
+- [x] Check desktop layout.
+- [x] Check mobile layout.
 
 **Acceptance checks:**
-- [ ] `npm test` passes.
-- [ ] `npm run build` passes.
-- [ ] Manual happy path succeeds.
-- [ ] Manual failure/retry path succeeds.
+- [x] `npm test` passes.
+- [x] `npm run build` passes.
+- [x] Manual happy path succeeds.
+- [x] Manual failure/retry path succeeds.
 
 **Commit:**
 - `test: verify phase one generated site flow`
@@ -764,14 +764,14 @@
 
 ## Final Phase 1 Completion Criteria
 
-- [ ] Local builder app runs.
-- [ ] User can complete the wizard.
-- [ ] User can select any discovered local style.
-- [ ] Project workspace is created under `generated_projects/<project-slug>/v1/`.
-- [ ] Raw input, manifest, artifacts, page data, assets, and preview metadata persist to disk.
-- [ ] `Ollama` pipeline runs through all stages.
-- [ ] Failed stage is visible when generation fails.
-- [ ] Retry reruns the full pipeline.
-- [ ] Preview renders through the builder app.
-- [ ] Existing projects can be reopened for preview.
-- [ ] No Phase 2 or Release Phase features are included.
+- [x] Local builder app runs.
+- [x] User can complete the wizard.
+- [x] User can select any discovered local style.
+- [x] Project workspace is created under `generated_projects/<project-slug>/v1/`.
+- [x] Raw input, manifest, artifacts, page data, assets, and preview metadata persist to disk.
+- [x] `Ollama` pipeline runs through all stages.
+- [x] Failed stage is visible when generation fails.
+- [x] Retry reruns the full pipeline.
+- [x] Preview renders through the builder app.
+- [x] Existing projects can be reopened for preview.
+- [x] No Phase 2 or Release Phase features are included.

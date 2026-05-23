@@ -1,0 +1,78 @@
+{
+  "sections": [
+    {
+      "sectionType": "hero",
+      "copyIntent": "Introduce 'Dental' as a family dentist in Boston, MA, to establish the practice's identity and primary value proposition, using only the business name, description, and city/state information from the page plan.",
+      "factualConstraints": [
+        "Must use the exact business name 'Dental'.",
+        "Must specify the location as Boston, MA.",
+        "Must align with the provided business description without adding external qualifications."
+      ],
+      "bannedClaims": [
+        "Claims of 'best', 'leading', or 'top' dentists.",
+        "Specific pricing or cost estimates.",
+        "Guarantees of treatment outcomes.",
+        "Any unverified certifications or awards."
+      ]
+    },
+    {
+      "sectionType": "services",
+      "copyIntent": "Present the core dental services listed in the page plan to inform visitors of the practice's capabilities and relevance, ensuring accuracy and clarity.",
+      "factualConstraints": [
+        "Must only list services explicitly present in the 'services' data field of the page plan.",
+        "Must describe services based solely on the provided descriptions."
+      ],
+      "bannedClaims": [
+        "Promising specific timeframes for service completion.",
+        "Asserting exclusive rights to a service.",
+        "Mentioning unlisted services or specialties.",
+        "Including contact details that are not in the contact section."
+      ]
+    },
+    {
+      "sectionType": "about",
+      "copyIntent": "Build trust by contextualizing the business description and location, reinforcing the practice's connection to the Boston, MA community.",
+      "factualConstraints": [
+        "Must reference Boston, MA as the location.",
+        "Must utilize the provided business description to frame the narrative.",
+        "Must maintain a tone consistent with a family dentist."
+      ],
+      "bannedClaims": [
+        "Inventing the number of years in business.",
+        "Falsifying the size or structure of the team.",
+        "Citing specific patient testimonials or success stories not provided.",
+        "Mentioning competitors."
+      ]
+    },
+    {
+      "sectionType": "contact",
+      "copyIntent": "Provide immediate and accessible ways for potential patients to reach the practice by displaying the phone number, email, and location.",
+      "factualConstraints": [
+        "Must include the exact phone number from the contact data.",
+        "Must include the exact email address from the contact data.",
+        "Must display the location as Boston, MA."
+      ],
+      "bannedClaims": [
+        "Listing incorrect or unverified phone numbers or emails.",
+        "Promising immediate response times.",
+        "Providing directions or maps not requested.",
+        "Mentioning operating hours not explicitly confirmed."
+      ]
+    },
+    {
+      "sectionType": "footer",
+      "copyIntent": "Close the page with clear attribution and a recap of contact information to ensure the user retains the necessary details.",
+      "factualConstraints": [
+        "Must display the business name 'Dental'.",
+        "Must repeat the contact phone number.",
+        "Must repeat the contact email address."
+      ],
+      "bannedClaims": [
+        "Adding new links or resources not defined in the page plan.",
+        "Listing additional services not covered elsewhere.",
+        "Changing the tone or style from the main content.",
+        "Including unverified social media handles."
+      ]
+    }
+  ]
+}

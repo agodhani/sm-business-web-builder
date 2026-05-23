@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BusinessBasicsStep } from "./business-basics-step";
 import { ContactLocationStep } from "./contact-location-step";
 import { PricingImagesStep } from "./pricing-images-step";
@@ -57,13 +58,16 @@ function parseSocialLinks(value: string): string[] {
 }
 
 export function WizardShell({ styles }: WizardShellProps) {
+  const router = useRouter();
   const [state, setState] = useState<WizardFormState>(() => createInitialState(styles));
   const [projectNameEdited, setProjectNameEdited] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitSuccessMessage, setSubmitSuccessMessage] = useState<string | null>(null);
+  const [generationStatusMessage, setGenerationStatusMessage] = useState<string | null>(null);
+  const [failedStage, setFailedStage] = useState<string | null>(null);
+  const [activeProjectSlug, setActiveProjectSlug] = useState<string | null>(null);
 
   const stepTitle = stepTitles[stepIndex];
   const progressText = `Step ${stepIndex + 1} of ${stepTitles.length}: ${stepTitle}`;
@@ -201,7 +205,8 @@ export function WizardShell({ styles }: WizardShellProps) {
 
     setSubmitting(true);
     setSubmitError(null);
-    setSubmitSuccessMessage(null);
+    setGenerationStatusMessage(null);
+    setFailedStage(null);
     setErrors((current) => ({ ...current, submit: "" }));
 
     try {
@@ -242,11 +247,66 @@ export function WizardShell({ styles }: WizardShellProps) {
       }
 
       const responseBody = (await response.json()) as { projectSlug: string };
-      setSubmitSuccessMessage(
-        `Project created successfully as "${responseBody.projectSlug}". Generation wiring is added in Packet 19.`
-      );
+      const projectSlug = responseBody.projectSlug;
+      setActiveProjectSlug(projectSlug);
+      setGenerationStatusMessage("Project created. Generation pipeline is running...");
+
+      const generationResponse = await fetch(`/api/projects/${projectSlug}/generate`, {
+        method: "POST"
+      });
+      const generationBody = (await generationResponse.json().catch(() => null)) as
+        | { failedStage?: string; message?: string; previewPath?: string }
+        | null;
+
+      if (!generationResponse.ok) {
+        const stage = generationBody?.failedStage ?? "unknown";
+        setFailedStage(stage);
+        setSubmitError(generationBody?.message ?? "Generation failed.");
+        setGenerationStatusMessage(null);
+        return;
+      }
+
+      setGenerationStatusMessage("Generation completed. Opening preview...");
+      router.push(`/projects/${projectSlug}`);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Project creation failed.");
+      setSubmitError(error instanceof Error ? error.message : "Project creation or generation failed.");
+      setGenerationStatusMessage(null);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function retryGeneration() {
+    if (!activeProjectSlug) {
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+    setGenerationStatusMessage("Retrying full generation pipeline...");
+    setFailedStage(null);
+
+    try {
+      const response = await fetch(`/api/projects/${activeProjectSlug}/retry`, {
+        method: "POST"
+      });
+      const responseBody = (await response.json().catch(() => null)) as
+        | { failedStage?: string; message?: string }
+        | null;
+
+      if (!response.ok) {
+        const stage = responseBody?.failedStage ?? "unknown";
+        setFailedStage(stage);
+        setSubmitError(responseBody?.message ?? "Retry failed.");
+        setGenerationStatusMessage(null);
+        return;
+      }
+
+      setGenerationStatusMessage("Retry succeeded. Opening preview...");
+      router.push(`/projects/${activeProjectSlug}`);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Retry failed.");
+      setGenerationStatusMessage(null);
     } finally {
       setSubmitting(false);
     }
@@ -291,9 +351,12 @@ export function WizardShell({ styles }: WizardShellProps) {
         <ReviewGenerateStep
           state={state}
           onSubmit={submitProject}
+          onRetry={retryGeneration}
           submitting={submitting}
           submitError={submitError}
-          submitSuccessMessage={submitSuccessMessage}
+          generationStatusMessage={generationStatusMessage}
+          failedStage={failedStage}
+          canRetry={Boolean(activeProjectSlug && failedStage)}
           errors={errors}
         />
       ) : null}

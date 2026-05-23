@@ -1,0 +1,13 @@
+{
+  "projectName": "test",
+  "projectSlug": "test",
+  "businessName": "Dental",
+  "selectedStyleId": "ibm",
+  "version": "v1",
+  "status": "generated",
+  "currentStage": null,
+  "failedStage": null,
+  "createdAt": "2026-05-23T20:17:41.610Z",
+  "updatedAt": "2026-05-23T20:18:20.837Z",
+  "previewPath": "/projects/test"
+}

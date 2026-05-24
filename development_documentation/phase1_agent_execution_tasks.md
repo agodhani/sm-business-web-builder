@@ -8,7 +8,9 @@
 - `development_documentation/project_prd_phases.md`
 - `development_documentation/phase1_implementation_plan.md`
 
-**Phase 1 objective:** A local `Next.js` builder app lets a user complete a multi-step small-business form, choose one local `DESIGN.md` style, generate structured artifacts through an `Ollama` pipeline, persist the project under `generated_projects/<project-slug>/v1/`, and preview the generated single-page site through the builder app.
+**Phase 1 objective:** A local `Next.js` builder app lets a user complete a multi-step small-business form, choose one local `DESIGN.md` style, generate structured artifacts through an `Ollama` pipeline, write a standalone generated `Next.js` site under `generated_projects/<project-slug>/<version>/site/`, install that site's per-project dependencies, and preview it as a separate local process.
+
+> **Architecture revision:** Task Packets 01-22 document the completed first pass built around fixed `page-data` and a shared builder preview runtime. The execution source of truth now moves to Task Packet 23 onward, which revises Phase 1 toward standalone generated `Next.js` sites, per-project dependencies, version folders, separate preview processes, and form-based edit/regenerate.
 
 ---
 
@@ -19,8 +21,11 @@
 - Keep `DESIGN.md` files as the style source of truth.
 - Persist artifacts to disk; do not keep generated output only in memory.
 - Use one configured default `Ollama` model.
-- Use fixed page-data schema and fixed Phase 1 section types.
-- Do not implement post-generation editing, multi-page output, contact-form submission, hosted deployment, in-app export, or multiple model providers.
+- Generate standalone `Next.js` site code for each project version instead of fixed page data rendered by generic builder components.
+- Use per-project dependencies for generated sites; the generated file bundle must include a generated-site `package.json`.
+- Treat generated code as trusted for local Phase 1 development. Production guardrails for malicious prompts, generated code, and dependencies are deferred to the Release Phase.
+- Do not force uploaded images into a gallery. Prompt Qwen to place provided images wherever they best support the generated site.
+- Keep Phase 1 single-page. Do not implement multi-page output, contact-form submission, hosted deployment, in-app export, multiple model providers, direct generated-code editing, visual version comparison, or production guardrails.
 - After each task, run the task-specific checks and record any failures in the final task note or commit body.
 
 ---
@@ -32,6 +37,7 @@
 - Generated project root: `generated_projects/`
 - Builder preview route shape: `/projects/<projectSlug>`
 - Default local builder URL: `http://localhost:3000`
+- Generated-site preview URL: allocated dynamically, starting at the next available local port after the builder app
 - Default `Ollama` URL: `http://localhost:11434`
 
 ---
@@ -762,6 +768,322 @@
 
 ---
 
+## Revised Architecture Task Packets
+
+Task Packets 23 onward supersede the fixed `page-data` preview architecture from Task Packets 15-18 while preserving useful completed work: wizard input, style loading, project persistence, Ollama connector, brief generation, page planning, story requirements, failure reporting, and project listing.
+
+---
+
+## Task Packet 23: Revise Project Manifest for Versions
+
+**Depends on:** Task Packet 22
+
+**Goal:** Track multiple generated versions without overwriting previous outputs.
+
+**Files to modify:**
+- `src/lib/projects/project-manifest.ts`
+- `src/lib/projects/project-paths.ts`
+- `src/lib/projects/project-storage.ts`
+- `src/lib/projects/project-query.ts`
+- `src/lib/projects/__tests__/project-manifest.test.ts`
+- `src/lib/projects/__tests__/project-storage.test.ts`
+
+**Steps:**
+- [ ] Move version status into per-version records.
+- [ ] Track `activeVersion`, `latestVersion`, and `versions[]` in the project manifest.
+- [ ] Add path helpers for arbitrary version names such as `v1`, `v2`, and `v3`.
+- [ ] Preserve old version folders and never overwrite prior successful generated sites.
+- [ ] Keep `activeVersion` pointed at the previous successful version when a new version fails.
+- [ ] Update project list summaries to show active version, latest status, selected style, and updated time.
+
+**Acceptance checks:**
+- [ ] `npm test -- project-manifest project-storage` passes.
+- [ ] Creating `v2` does not modify `v1`.
+- [ ] Failed `v2` leaves `activeVersion = "v1"`.
+
+**Commit:**
+- `feat: support versioned project manifests`
+
+---
+
+## Task Packet 24: Define Generated Site Bundle Contract
+
+**Depends on:** Task Packet 23
+
+**Goal:** Replace final page-data output with a structured generated-site file bundle.
+
+**Files to create or modify:**
+- `src/lib/types/generated-site.ts`
+- `src/lib/validation/generated-site-schema.ts`
+- `src/lib/validation/__tests__/generated-site-schema.test.ts`
+- `src/lib/generation/types.ts`
+
+**Required bundle shape:**
+- `files`: list of `{ path, content }`
+- Required files:
+  - `package.json`
+  - `app/layout.tsx`
+  - `app/page.tsx`
+  - `app/globals.css`
+- Optional files:
+  - `components/**/*.tsx`
+  - `lib/**/*.ts`
+  - `public/**/*`
+  - other app-local source/config files needed by the generated project
+
+**Steps:**
+- [ ] Validate file bundle JSON.
+- [ ] Reject absolute paths, `..`, `.env`, `node_modules`, lockfiles supplied by the model, and files outside the generated `site/` folder.
+- [ ] Require a generated-site `package.json` with scripts needed for install/build/dev.
+- [ ] Allow Qwen to choose generated-site dependencies for Phase 1 local development.
+- [ ] Add tests for valid bundles, missing required files, and invalid paths.
+
+**Acceptance checks:**
+- [ ] `npm test -- generated-site-schema` passes.
+- [ ] Invalid paths cannot be written.
+
+**Commit:**
+- `feat: define generated site bundle schema`
+
+---
+
+## Task Packet 25: Add Site Code Prompt
+
+**Depends on:** Task Packet 24 and Task Packet 14
+
+**Goal:** Prompt Qwen to generate a complete standalone `Next.js` site from prior artifacts and selected style.
+
+**Files to create or modify:**
+- `src/lib/generation/prompts/site-code-prompt.ts`
+- `src/lib/generation/prompts/page-plan-prompt.ts`
+- `src/lib/generation/prompts/story-prompt.ts`
+- `src/lib/generation/types.ts`
+
+**Prompt requirements:**
+- [ ] Return JSON only using the generated-site file bundle shape.
+- [ ] Generate a single-page `Next.js` App Router site.
+- [ ] Include a complete `package.json` for the generated site.
+- [ ] Use the selected `DESIGN.md` as the visual source of truth.
+- [ ] Use only factual business/contact/location/pricing/service facts from provided artifacts.
+- [ ] Place provided images wherever they best support the site: hero, about, services, visual bands, location/contact, cards, or gallery only when appropriate.
+- [ ] Do not create a photo gallery by default.
+- [ ] Do not invent image paths; use supplied generated-site public paths exactly.
+- [ ] Keep the site responsive and visually polished on desktop and mobile.
+
+**Acceptance checks:**
+- [ ] Prompt function exports typed input and string output.
+- [ ] Prompt includes available image metadata and explicit non-gallery image guidance.
+- [ ] `npm run build` passes.
+
+**Commit:**
+- `feat: add generated site code prompt`
+
+---
+
+## Task Packet 26: Implement Site Code Generation Stage
+
+**Depends on:** Task Packet 25
+
+**Goal:** Generate and persist standalone generated-site code under the active version folder.
+
+**Files to create or modify:**
+- `src/lib/generation/stages/create-site-code.ts`
+- `src/lib/generated-site/write-site-files.ts`
+- `src/lib/projects/project-storage.ts`
+- `src/lib/generation/pipeline.ts`
+- `src/lib/generation/__tests__/pipeline.test.ts`
+
+**Steps:**
+- [ ] Load brief, page plan, story requirements, selected style, and available image metadata.
+- [ ] Call Qwen through the existing `Ollama` connector with the site-code prompt.
+- [ ] Validate the returned file bundle.
+- [ ] Write generated files into `<version>/site/`.
+- [ ] Copy selected images into `<version>/site/public/images/`.
+- [ ] Persist raw generation request/response under `<version>/artifacts/`.
+- [ ] Mark `failedStage = "site-code"` on generation or validation failure.
+
+**Acceptance checks:**
+- [ ] Mocked generation writes required site files.
+- [ ] Invalid file paths fail before writing.
+- [ ] `npm run build` passes.
+
+**Commit:**
+- `feat: generate standalone next site code`
+
+---
+
+## Task Packet 27: Install and Validate Generated Site
+
+**Depends on:** Task Packet 26
+
+**Goal:** Confirm generated projects can install and build before preview.
+
+**Files to create or modify:**
+- `src/lib/generated-site/install-dependencies.ts`
+- `src/lib/generated-site/validate-generated-site.ts`
+- `src/lib/generation/stages/validate-site.ts`
+- `src/lib/projects/project-storage.ts`
+- `src/lib/generation/pipeline.ts`
+
+**Steps:**
+- [ ] Run `npm install` inside `<version>/site/`.
+- [ ] Capture install output to `<version>/artifacts/install.log`.
+- [ ] Run generated-site build validation.
+- [ ] Capture build output to `<version>/artifacts/build.log`.
+- [ ] Persist a validation report.
+- [ ] Mark `failedStage = "install"` or `failedStage = "build"` when validation fails.
+- [ ] Mark the version generated only after site-code, install, and build validation succeed.
+
+**Acceptance checks:**
+- [ ] Mocked install/build success marks version generated.
+- [ ] Mocked install failure persists install log and failed stage.
+- [ ] Mocked build failure persists build log and failed stage.
+
+**Commit:**
+- `feat: validate generated next sites`
+
+---
+
+## Task Packet 28: Add Preview Process Manager
+
+**Depends on:** Task Packet 27
+
+**Goal:** Launch, stop, and relaunch generated-site previews as separate local processes.
+
+**Files to create or modify:**
+- `src/lib/preview/preview-process-manager.ts`
+- `src/lib/preview/preview-port.ts`
+- `src/lib/preview/preview-state.ts`
+- `src/app/api/projects/[projectSlug]/preview/start/route.ts`
+- `src/app/api/projects/[projectSlug]/preview/stop/route.ts`
+- `src/app/api/projects/__tests__/preview-process-route.test.ts`
+
+**Steps:**
+- [ ] Find an available local port for generated-site preview.
+- [ ] Start the active generated version with its generated-site dev script.
+- [ ] Capture stdout/stderr to `<version>/artifacts/preview.log`.
+- [ ] Poll the local preview URL until it responds.
+- [ ] Stop the currently running generated-site preview before starting another one.
+- [ ] Store preview metadata with status, port, URL, started time, and version.
+- [ ] Expose clear failure state if preview start fails.
+
+**Acceptance checks:**
+- [ ] Starting preview returns a local URL.
+- [ ] Starting a second preview stops the first one.
+- [ ] Stopped previews can be started again without regeneration.
+
+**Commit:**
+- `feat: manage generated site preview processes`
+
+---
+
+## Task Packet 29: Build Edit and Regenerate Flow
+
+**Depends on:** Task Packet 23 and Task Packet 27
+
+**Goal:** Make `Edit + Regenerate` the primary iteration path.
+
+**Files to create or modify:**
+- `src/app/projects/[projectSlug]/edit/page.tsx`
+- `src/app/api/projects/[projectSlug]/input/route.ts`
+- `src/app/api/projects/[projectSlug]/regenerate/route.ts`
+- `src/components/wizard/wizard-shell.tsx`
+- `src/components/wizard/pricing-images-step.tsx`
+- `src/components/projects/edit-regenerate-button.tsx`
+- `src/app/api/projects/__tests__/regenerate-route.test.ts`
+
+**Steps:**
+- [ ] Load the active version's `raw-input.json` into the wizard.
+- [ ] Allow users to change any submitted field.
+- [ ] Allow users to keep, remove, replace, or add images during resubmission.
+- [ ] Submit edited form data to create the next version folder.
+- [ ] Copy only the selected image set into the new version.
+- [ ] Run the full generation pipeline for the new version.
+- [ ] Make successful new versions active.
+- [ ] Preserve the old active version when the new version fails.
+
+**Acceptance checks:**
+- [ ] Existing project opens with form values prefilled.
+- [ ] Edited form submission creates `v2`.
+- [ ] Removing an old image excludes it from `v2`.
+- [ ] Failed `v2` preserves active `v1`.
+
+**Commit:**
+- `feat: edit and regenerate project versions`
+
+---
+
+## Task Packet 30: Update Project Detail and Reopen UX
+
+**Depends on:** Task Packet 28 and Task Packet 29
+
+**Goal:** Make generated projects easy to preview, stop, restart, and regenerate.
+
+**Files to create or modify:**
+- `src/app/projects/[projectSlug]/page.tsx`
+- `src/components/projects/project-list.tsx`
+- `src/components/projects/preview-controls.tsx`
+- `src/components/projects/edit-regenerate-button.tsx`
+- `src/lib/projects/project-query.ts`
+
+**Steps:**
+- [ ] Show active version and latest version status.
+- [ ] Show `Start Preview` when the generated site is not running.
+- [ ] Show `Stop Preview` when the generated site is running.
+- [ ] Embed or link the running generated-site preview URL.
+- [ ] Make `Edit + Regenerate` the primary action.
+- [ ] Add a secondary `Regenerate Without Changes` action.
+- [ ] Expose install, build, generation, and preview failure logs when available.
+
+**Acceptance checks:**
+- [ ] Reopened generated projects can start preview without regenerating.
+- [ ] Project page links to edit/regenerate flow.
+- [ ] Failed versions show failed stage and logs.
+
+**Commit:**
+- `feat: update project preview controls`
+
+---
+
+## Task Packet 31: Revised End-to-End Verification
+
+**Depends on:** Task Packet 30
+
+**Goal:** Confirm revised Option A architecture works end to end.
+
+**Test scenarios:**
+- [ ] Generate a project with required fields only.
+- [ ] Generate a project with pricing and images.
+- [ ] Confirm images can appear outside a gallery in generated output.
+- [ ] Confirm no-gallery output is acceptable when Qwen chooses a better layout.
+- [ ] Confirm generated-site dependencies install per project.
+- [ ] Confirm generated-site build validation runs.
+- [ ] Start generated-site preview as a separate process.
+- [ ] Stop and start preview again without regeneration.
+- [ ] Reopen a project and start preview again.
+- [ ] Edit form values and regenerate into `v2`.
+- [ ] Replace/remove images during edit and confirm `v2` asset set changes.
+- [ ] Confirm successful `v2` becomes active.
+- [ ] Simulate failed `v2` and confirm `v1` remains active.
+- [ ] Check desktop layout.
+- [ ] Check mobile layout.
+
+**Acceptance checks:**
+- [ ] `npm test` passes.
+- [ ] `npm run build` passes.
+- [ ] Manual generated-site happy path succeeds.
+- [ ] Manual edit/regenerate path succeeds.
+- [ ] Manual preview relaunch path succeeds.
+
+**Commit:**
+- `test: verify standalone generated site flow`
+
+---
+
+## Superseded Phase 1 Completion Criteria
+
+The criteria below reflect the completed shared-runtime pass from Task Packets 01-22. They remain checked for historical continuity, but revised completion is tracked in the next section.
+
 ## Final Phase 1 Completion Criteria
 
 - [x] Local builder app runs.
@@ -775,3 +1097,26 @@
 - [x] Preview renders through the builder app.
 - [x] Existing projects can be reopened for preview.
 - [x] No Phase 2 or Release Phase features are included.
+
+---
+
+## Revised Final Phase 1 Completion Criteria
+
+- [ ] Local builder app runs.
+- [ ] User can complete the wizard.
+- [ ] User can select any discovered local style.
+- [ ] Project workspace is created under `generated_projects/<project-slug>/`.
+- [ ] New projects create `v1`; edit/regenerate creates `v2`, `v3`, and later version folders.
+- [ ] Raw input, manifest, artifacts, generated site code, assets, logs, and preview metadata persist to disk.
+- [ ] Project manifest tracks `activeVersion`, `latestVersion`, and per-version status.
+- [ ] `Ollama` pipeline runs through brief, page plan, story requirements, site-code generation, dependency install, and build validation.
+- [ ] Qwen generates standalone `Next.js` site code under `<version>/site/`.
+- [ ] Generated-site dependencies install per project.
+- [ ] Failed stage is visible when generation, install, build, or preview start fails.
+- [ ] Failed new versions do not replace the active successful version.
+- [ ] `Edit + Regenerate` loads active version form data and creates a new version from edited input.
+- [ ] Users can keep, remove, replace, or add images during edit/regenerate.
+- [ ] Prompting allows images to be placed contextually across the site and does not force a gallery.
+- [ ] A generated-site preview can be started, stopped, and started again as a separate local process.
+- [ ] Existing projects can be reopened and preview can be relaunched without regeneration.
+- [ ] No direct generated-code editing, multi-page output, contact-form submission, hosted deployment, in-app export, multiple model providers, or production guardrails are included.

@@ -1,0 +1,54 @@
+{
+  "selectedStyleId": "airbnb",
+  "sections": [
+    {
+      "type": "hero",
+      "objective": "Introduce Ollie The Dog Model as a very cute doge in Boston, MA, utilizing the Airbnb style's focus on photography and clean white canvas.",
+      "factualRequirements": [
+        "businessName: Ollie The Dog Model",
+        "businessDescription: a very cute doge",
+        "location: Boston, MA"
+      ]
+    },
+    {
+      "type": "services",
+      "objective": "List the specific services offered by the business.",
+      "factualRequirements": [
+        "services: Dog Petting",
+        "services: Dog Feeding"
+      ]
+    },
+    {
+      "type": "about",
+      "objective": "Provide context about the business entity and its location.",
+      "factualRequirements": [
+        "businessName: Ollie The Dog Model",
+        "businessCategory: Modeling",
+        "location: Boston, MA"
+      ]
+    },
+    {
+      "type": "gallery",
+      "objective": "Display available visual assets for the business.",
+      "factualRequirements": [
+        "imageAssetPaths: generated_projects/ollie-page/v1/assets/9F28C41E-1A3B-4D87-B1D6-CA2EECDE3F1F_1_105_c.jpeg"
+      ]
+    },
+    {
+      "type": "contact",
+      "objective": "Provide all available contact methods for the business.",
+      "factualRequirements": [
+        "contact.phone: 111-111-1111",
+        "contact.email: test@rawr.com",
+        "contact.website: hello.com"
+      ]
+    },
+    {
+      "type": "footer",
+      "objective": "Conclude the page with standard footer elements.",
+      "factualRequirements": [
+        "businessName: Ollie The Dog Model"
+      ]
+    }
+  ]
+}

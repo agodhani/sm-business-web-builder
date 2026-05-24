@@ -1,12 +1,6 @@
 import { z } from "zod";
 
 const nonEmptyText = z.string().trim().min(1);
-const optionalUrl = z
-  .string()
-  .trim()
-  .url()
-  .optional()
-  .or(z.literal("").transform(() => undefined));
 
 const optionalText = z
   .string()
@@ -29,8 +23,8 @@ export const wizardSchema = z.object({
   contact: z.object({
     phone: nonEmptyText,
     email: z.string().trim().email(),
-    website: optionalUrl,
-    socialLinks: z.array(z.string().trim().url()).optional()
+    website: optionalText,
+    socialLinks: z.array(z.string().trim().min(1)).optional()
   }),
   location: z.object({
     city: nonEmptyText,

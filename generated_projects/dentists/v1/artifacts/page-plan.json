@@ -1,0 +1,63 @@
+{
+  "selectedStyleId": "cohere",
+  "sections": [
+    {
+      "type": "hero",
+      "objective": "Introduce New Dental with a strong headline and call to action, utilizing the Cohere display typography for high impact.",
+      "factualRequirements": [
+        "businessName: New Dental",
+        "businessDescription: We make your teeth shine like they are brand new!!",
+        "imageAssetPaths: First image in list"
+      ]
+    },
+    {
+      "type": "services",
+      "objective": "List the core dental services offered by the clinic.",
+      "factualRequirements": [
+        "services: Teeth cleaning",
+        "services: Cavity Removal"
+      ]
+    },
+    {
+      "type": "pricing",
+      "objective": "Display the cost for specific dental procedures to provide price transparency.",
+      "factualRequirements": [
+        "pricing: $100 per teeth cleaning, $1000 for cavity removal"
+      ]
+    },
+    {
+      "type": "gallery",
+      "objective": "Showcase visual content of the clinic or results using the provided asset images.",
+      "factualRequirements": [
+        "imageAssetPaths: All images in the list"
+      ]
+    },
+    {
+      "type": "about",
+      "objective": "Provide context about the clinic's location and identity.",
+      "factualRequirements": [
+        "businessName: New Dental",
+        "businessCategory: Dental Clinic",
+        "location.city: Boston",
+        "location.state: MA"
+      ]
+    },
+    {
+      "type": "contact",
+      "objective": "Provide clear methods for customers to reach the business.",
+      "factualRequirements": [
+        "contact.phone: 111-111-1111",
+        "contact.email: hello@dentists.com"
+      ]
+    },
+    {
+      "type": "footer",
+      "objective": "Close the page with standard copyright or location info.",
+      "factualRequirements": [
+        "businessName: New Dental",
+        "location.city: Boston",
+        "location.state: MA"
+      ]
+    }
+  ]
+}

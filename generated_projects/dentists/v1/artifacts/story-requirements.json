@@ -1,0 +1,105 @@
+{
+  "sections": [
+    {
+      "sectionType": "hero",
+      "copyIntent": "Introduce New Dental with a strong headline and call to action, utilizing the Cohere display typography for high impact.",
+      "factualConstraints": [
+        "businessName: New Dental",
+        "businessDescription: We make your teeth shine like they are brand new!!",
+        "imageAssetPaths: First image in list"
+      ],
+      "bannedClaims": [
+        "No pricing information",
+        "No service specifics beyond general introduction",
+        "No contact details",
+        "No location details"
+      ]
+    },
+    {
+      "sectionType": "services",
+      "copyIntent": "List the core dental services offered by the clinic.",
+      "factualConstraints": [
+        "services: Teeth cleaning",
+        "services: Cavity Removal"
+      ],
+      "bannedClaims": [
+        "No pricing information",
+        "No promotional guarantees",
+        "No contact details",
+        "No location details"
+      ]
+    },
+    {
+      "sectionType": "pricing",
+      "copyIntent": "Display the cost for specific dental procedures to provide price transparency.",
+      "factualConstraints": [
+        "pricing: $100 per teeth cleaning",
+        "pricing: $1000 for cavity removal"
+      ],
+      "bannedClaims": [
+        "No service guarantees",
+        "No promotional discounts",
+        "No contact details",
+        "No location details"
+      ]
+    },
+    {
+      "sectionType": "gallery",
+      "copyIntent": "Showcase visual content of the clinic or results using the provided asset images.",
+      "factualConstraints": [
+        "imageAssetPaths: All images in the list"
+      ],
+      "bannedClaims": [
+        "No specific service claims attached to images",
+        "No pricing information",
+        "No contact details",
+        "No location details"
+      ]
+    },
+    {
+      "sectionType": "about",
+      "copyIntent": "Provide context about the clinic's location and identity.",
+      "factualConstraints": [
+        "businessName: New Dental",
+        "businessCategory: Dental Clinic",
+        "location.city: Boston",
+        "location.state: MA"
+      ],
+      "bannedClaims": [
+        "No specific staff credentials",
+        "No service specifics",
+        "No pricing information",
+        "No direct contact details"
+      ]
+    },
+    {
+      "sectionType": "contact",
+      "copyIntent": "Provide clear methods for customers to reach the business.",
+      "factualConstraints": [
+        "contact.phone: 111-111-1111",
+        "contact.email: hello@dentists.com"
+      ],
+      "bannedClaims": [
+        "No service descriptions",
+        "No pricing information",
+        "No location details",
+        "No promotional claims"
+      ]
+    },
+    {
+      "sectionType": "footer",
+      "copyIntent": "Close the page with standard copyright or location info.",
+      "factualConstraints": [
+        "businessName: New Dental",
+        "location.city: Boston",
+        "location.state: MA"
+      ],
+      "bannedClaims": [
+        "No specific service claims",
+        "No pricing information",
+        "No direct contact details",
+        "No promotional content"
+      ]
+    }
+  ]
+}

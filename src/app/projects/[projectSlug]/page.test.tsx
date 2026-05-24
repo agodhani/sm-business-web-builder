@@ -87,6 +87,8 @@ describe("ProjectPreviewPage", () => {
     });
 
     render(await ProjectPreviewPage({ params: Promise.resolve({ projectSlug: slug }) }));
-    expect(screen.getByText("Modern family dental care")).toBeInTheDocument();
+    const iframe = screen.getByTitle("Blue Peak Dental") as HTMLIFrameElement;
+    expect(iframe).toBeInTheDocument();
+    expect(iframe.src).toContain(`/api/projects/${slug}/page-html`);
   });
 });

@@ -3,14 +3,14 @@ import type { FieldErrors, WizardFormState } from "./types";
 type PricingImagesStepProps = {
   state: WizardFormState;
   onChange: (field: keyof WizardFormState, value: string) => void;
-  onImageNamesChange: (imageNames: string[]) => void;
+  onImagesChange: (images: File[]) => void;
   errors: FieldErrors;
 };
 
 export function PricingImagesStep({
   state,
   onChange,
-  onImageNamesChange,
+  onImagesChange,
   errors
 }: PricingImagesStepProps) {
   return (
@@ -35,16 +35,14 @@ export function PricingImagesStep({
         <input
           type="file"
           multiple
-          onChange={(event) =>
-            onImageNamesChange(Array.from(event.target.files ?? []).map((file) => file.name))
-          }
+          onChange={(event) => onImagesChange(Array.from(event.target.files ?? []))}
         />
       </label>
 
-      {state.selectedImageNames.length > 0 ? (
+      {state.selectedImages.length > 0 ? (
         <ul className="image-list">
-          {state.selectedImageNames.map((fileName) => (
-            <li key={fileName}>{fileName}</li>
+          {state.selectedImages.map((file) => (
+            <li key={file.name}>{file.name}</li>
           ))}
         </ul>
       ) : null}

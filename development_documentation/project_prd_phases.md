@@ -21,25 +21,31 @@ Agent-ready Phase 1 execution queue: `development_documentation/phase1_agent_exe
   - Generate and persist the normalized site brief
   - Generate and persist the page plan from the brief and selected style reference
   - Generate and persist story requirements from the page plan
-  - Build the shared internal runtime and component/template engine for generated sites
-  - Define and validate the fixed page-data schema for generated output
-  - Generate and persist structured page data for the runtime from the accumulated artifacts
-  - Render the generated project through the shared runtime
-  - Serve one active local preview on a fixed port through the builder app
+  - Generate and persist a standalone `Next.js` site file bundle from the accumulated artifacts
+  - Write generated site code under the active version's `site/` folder
+  - Install per-project dependencies for the generated site
+  - Validate generated sites with install, build, and preview-start checks
+  - Launch one active generated-site preview at a time as a separate local process
   - Build the project reopen list with lightweight metadata and preview relaunch support
+  - Add a `Start Preview` action for generated projects that are not currently running
+  - Add form-based `Edit + Regenerate` as the primary regeneration path
+  - Store each regeneration in a new version folder such as `v2` or `v3`
   - Expose generation-stage failure states to the user
   - Allow retrying generation from the same saved project after failure
   - Verify the generated site is responsive, coherent, and factually grounded
 - Phase 2: Iteration, editing, multi-page support, and versioning
-  - Reopen projects for continued editing
-  - Add post-generation editing workflows
+  - Add richer project iteration workflows beyond form-based regeneration
+  - Add direct generated-code editing or structured content editing if needed
   - Add user review and editing of intermediate artifacts
   - Add multi-page site generation
-  - Add real versioned regeneration and comparison flows
+  - Add version comparison, restore, and review flows
 - Phase 3: Non-static capabilities such as contact forms
   - Add working contact forms and supporting non-static interactions
+  - Add `Postgres` where needed for submissions, generation run history, project indexes, and operational state
 - Release Phase: Guardrails, export UX, and production readiness
   - Add production guardrails for direct customer usage
+  - Add malicious prompt and generated-code safety checks
+  - Add dependency and package-policy controls
   - Add in-app export and download flows
   - Add hosted deployment and release-readiness workflows
 

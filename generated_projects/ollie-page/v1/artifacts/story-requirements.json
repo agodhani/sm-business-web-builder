@@ -1,0 +1,84 @@
+{
+  "sections": [
+    {
+      "sectionType": "hero",
+      "copyIntent": "Introduce Ollie The Dog Model as a very cute doge in Boston, MA.",
+      "factualConstraints": [
+        "Business name must be 'Ollie The Dog Model'",
+        "Location must be 'Boston, MA'",
+        "Description must reference 'very cute doge'"
+      ],
+      "bannedClaims": [
+        "Certified models",
+        "Professional agency representation",
+        "Specific pricing for services"
+      ]
+    },
+    {
+      "sectionType": "services",
+      "copyIntent": "List the specific services offered by the business.",
+      "factualConstraints": [
+        "Must include 'Dog Petting'",
+        "Must include 'Dog Feeding'"
+      ],
+      "bannedClaims": [
+        "Medical care",
+        "Grooming services",
+        "Training programs",
+        "Guaranteed adoption rates"
+      ]
+    },
+    {
+      "sectionType": "about",
+      "copyIntent": "Provide context about the business entity and its location.",
+      "factualConstraints": [
+        "Business name must be 'Ollie The Dog Model'",
+        "Business category must be 'Modeling'",
+        "Location must be 'Boston, MA'"
+      ],
+      "bannedClaims": [
+        "Years of experience",
+        "Client testimonials",
+        "Awards or certifications"
+      ]
+    },
+    {
+      "sectionType": "gallery",
+      "copyIntent": "Display available visual assets for the business.",
+      "factualConstraints": [
+        "Must utilize asset path: 'generated_projects/ollie-page/v1/assets/9F28C41E-1A3B-4D87-B1D6-CA2EECDE3F1F_1_105_c.jpeg'"
+      ],
+      "bannedClaims": [
+        "Purchased stock photo rights",
+        "Exclusive licensing claims",
+        "Third-party attribution not present in asset path"
+      ]
+    },
+    {
+      "sectionType": "contact",
+      "copyIntent": "Provide all available contact methods for the business.",
+      "factualConstraints": [
+        "Phone must be '111-111-1111'",
+        "Email must be 'test@rawr.com'",
+        "Website must be 'hello.com'"
+      ],
+      "bannedClaims": [
+        "24/7 support availability",
+        "Additional unlisted contact methods",
+        "Response time guarantees"
+      ]
+    },
+    {
+      "sectionType": "footer",
+      "copyIntent": "Conclude the page with standard footer elements.",
+      "factualConstraints": [
+        "Business name must be 'Ollie The Dog Model'"
+      ],
+      "bannedClaims": [
+        "Legal disclaimers not provided in source",
+        "Privacy policy links not provided",
+        "Social media handles not provided"
+      ]
+    }
+  ]
+}

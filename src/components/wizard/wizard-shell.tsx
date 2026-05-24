@@ -40,7 +40,7 @@ function createInitialState(styles: StyleOption[]): WizardFormState {
     state: "",
     fullAddress: "",
     pricing: "",
-    selectedImageNames: [],
+    selectedImages: [],
     styleId: styles[0]?.styleId ?? "",
     preferences: ""
   };
@@ -125,10 +125,10 @@ export function WizardShell({ styles }: WizardShellProps) {
     });
   }
 
-  function onImageNamesChange(imageNames: string[]) {
+  function onImagesChange(images: File[]) {
     setState((current) => ({
       ...current,
-      selectedImageNames: imageNames
+      selectedImages: images
     }));
   }
 
@@ -233,12 +233,15 @@ export function WizardShell({ styles }: WizardShellProps) {
         preferences: state.preferences.trim() || undefined
       };
 
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(payload));
+      for (const file of state.selectedImages) {
+        formData.append("images", file);
+      }
+
       const response = await fetch("/api/projects", {
         method: "POST",
-        headers: {
-          "content-type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       if (!response.ok) {
@@ -340,7 +343,7 @@ export function WizardShell({ styles }: WizardShellProps) {
         <PricingImagesStep
           state={state}
           onChange={onChange}
-          onImageNamesChange={onImageNamesChange}
+          onImagesChange={onImagesChange}
           errors={errors}
         />
       ) : null}

@@ -12,8 +12,13 @@ type OllamaGenerateResponse = {
   error?: string;
 };
 
+function stripThinkBlocks(text: string): string {
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+}
+
 function extractJsonCandidate(text: string): string {
-  const trimmed = text.trim();
+  const stripped = stripThinkBlocks(text);
+  const trimmed = stripped.trim();
   if (!trimmed) {
     return "";
   }
@@ -60,6 +65,7 @@ export class OllamaConnector implements LLMConnector {
           model: this.model,
           prompt: input.prompt,
           stream: false,
+          think: false,
           format: "json"
         })
       });

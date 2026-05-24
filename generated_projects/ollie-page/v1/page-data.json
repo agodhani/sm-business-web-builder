@@ -1,0 +1,61 @@
+{
+  "site": {
+    "projectName": "Ollie Page",
+    "businessName": "Ollie The Dog Model",
+    "category": "Modeling",
+    "styleId": "airbnb"
+  },
+  "theme": {
+    "styleId": "airbnb"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "headline": "Ollie The Dog Model",
+      "subheadline": "a very cute doge",
+      "primaryCta": "Contact",
+      "secondaryCta": "View Gallery"
+    },
+    {
+      "type": "services",
+      "title": "Services",
+      "items": [
+        {
+          "name": "Dog Petting",
+          "description": "Gentle petting sessions."
+        },
+        {
+          "name": "Dog Feeding",
+          "description": "Regular feeding schedules."
+        }
+      ]
+    },
+    {
+      "type": "about",
+      "title": "About",
+      "body": "Ollie The Dog Model is a modeling business located in Boston, MA."
+    },
+    {
+      "type": "gallery",
+      "title": "Gallery",
+      "images": [
+        {
+          "alt": "Ollie The Dog Model",
+          "path": "generated_projects/ollie-page/v1/assets/9F28C41E-1A3B-4D87-B1D6-CA2EECDE3F1F_1_105_c.jpeg"
+        }
+      ]
+    },
+    {
+      "type": "contact",
+      "title": "Contact",
+      "phone": "111-111-1111",
+      "email": "test@rawr.com",
+      "city": "Boston",
+      "state": "MA"
+    },
+    {
+      "type": "footer",
+      "text": "© Ollie The Dog Model"
+    }
+  ]
+}

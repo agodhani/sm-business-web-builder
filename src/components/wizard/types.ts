@@ -19,7 +19,7 @@ export type WizardFormState = {
   state: string;
   fullAddress: string;
   pricing: string;
-  selectedImageNames: string[];
+  selectedImages: File[];
   styleId: string;
   preferences: string;
 };

@@ -81,8 +81,10 @@ Phase 1 pipeline stages:
 2. Build a page plan from the brief plus the selected style reference
 3. Build story requirements for the page from the initial plan
 4. Use the structured artifacts to drive a constrained final generation step
-5. Generate the Next.js single-page site code through the internal component system
-6. Run the generated site locally for preview
+5. Generate a standalone `Next.js` single-page site codebase into the project version folder
+6. Install the generated site's per-project dependencies
+7. Run build/start validation for the generated site
+8. Launch the generated site as a separate local preview process
 
 The LLM should generate polished website copy from factual business inputs supplied by the user.
 
@@ -90,9 +92,11 @@ Phase 1 should run the full generation pipeline automatically.
 
 User review of intermediate artifacts is deferred to Phase 2.
 
-Generated copy is not user-editable in Phase 1.
+Generated copy is not edited directly in Phase 1. The primary regeneration path is to reopen the saved form, edit the form values, and generate a new project version.
 
 Intermediate artifacts should be persisted so generation is debuggable and repeatable.
+
+The generated code is assumed trusted in Phase 1 local development. Production-grade prompt safety, generated-code safety scanning, dependency allowlists, and malicious-input guardrails are deferred to the Release Phase.
 
 ## Project Storage
 
@@ -104,19 +108,22 @@ The project name should default to the business name but remain user-editable.
 
 Each project workspace should contain:
 
-- Project manifest
-- Raw form data
-- Normalized brief
-- Page plan
-- Story requirements
-- Generated code
+- Project-level manifest
+- Version folders such as `v1`, `v2`, and `v3`
+- Per-version raw form data
+- Per-version normalized brief
+- Per-version page plan
+- Per-version story requirements
+- Per-version generated code under `site/`
+- Per-version copied assets
+- Per-version dependency, build, generation, and preview logs
 - Preview metadata
 
 Failed generation artifacts should also be preserved within the project workspace for debugging.
 
-Phase 1 should store the first build inside a version-ready structure such as `v1` within the project folder.
+Phase 1 should store the first build inside `v1`. Every edit-and-regenerate action should create the next folder, such as `v2` or `v3`, instead of overwriting a prior version.
 
-Full versioned regeneration workflows are deferred to Phase 2.
+The project manifest should track `activeVersion`, `latestVersion`, and the status of each version. A failed new version should not replace the active successful version.
 
 ## Failure Handling
 
@@ -126,19 +133,21 @@ Phase 1 should allow retrying generation from the same saved project after a fai
 
 In Phase 1, retry should rerun the full pipeline from the beginning rather than resuming from the failed stage.
 
+The primary regeneration path should be `Edit + Regenerate`: the builder loads the active version's saved form input into the wizard, the user can change any field including images, and submission creates a new version folder. A secondary `Regenerate Without Changes` action may create a new version from the active version's existing form input.
+
 ## Project Access
 
 Phase 1 should allow users to reopen existing generated projects for viewing and rerunning the local preview.
 
-Reopening a project for continued editing or iteration is deferred to Phase 2.
+Reopening a project for form-based editing and regeneration is part of the revised Phase 1 direction. Rich version comparison, direct generated-code editing, and intermediate-artifact editing are deferred to Phase 2.
 
 When reopening projects in Phase 1, the app should provide a simple project list with lightweight metadata such as project name, selected style, and last updated time.
 
 ## Preview Runtime
 
-Phase 1 supports one active local preview at a time on a fixed port.
+Phase 1 supports one active generated-site preview process at a time.
 
-The preview should be served by the builder app itself rather than by spawning a separate server process per generated project.
+The builder app should launch the active generated version as a separate local `Next.js` process on an available local port, capture preview logs, and store the running URL in preview metadata. Reopening a generated project should provide a `Start Preview` action when no preview process is currently running.
 
 ## Export
 
@@ -150,46 +159,39 @@ In-app download or export is deferred to the Release Phase.
 
 Primary output:
 
-- A complete exportable static website codebase generated in Next.js with static output
-- A spawned local preview on a specific port so the user can interact with the generated site after creation
+- A complete exportable `Next.js` website codebase generated under the active version's `site/` folder
+- A spawned local preview process on a local port so the user can interact with the generated site after creation
 
-The generated site should be built from a reusable internal component system rather than fully unconstrained code generation.
+The generated site should be a standalone `Next.js` app. The model may create its own components, CSS, and package dependencies for that generated project.
 
-The generated site should be assembled through a shared internal runtime or template engine managed by the builder, not as a fully independent handcrafted app architecture per project.
+The generated site should not be forced through the builder's shared preview runtime. The builder owns orchestration, persistence, dependency installation, validation, process management, and preview launch.
 
-The final generation artifact should be structured page data rendered by the shared runtime, not freeform React component code generation.
+The final generation artifact should be a structured file bundle representing a standalone generated site, not fixed page data rendered by generic builder components.
 
-The generated page data should follow a fixed validated schema in Phase 1.
+The file bundle should be validated before writing files. Validation should at minimum ensure valid JSON bundle structure, safe relative paths, required generated app files, dependency metadata, and successful install/build/start checks.
 
-Phase 1 should support a fixed set of section types.
+Phase 1 generates a single-page site, but it should not force a fixed list of visual section types.
 
-Phase 1 section types:
+The page plan can still describe likely content areas, such as:
 
 - `hero`
 - `services`
 - `about`
 - `pricing`
-- `gallery`
 - `contact`
 - `footer`
 
-The generator should include only the sections justified by the available input. Unsupported or empty sections should be omitted.
+The generator should include only content justified by the available input. It may choose visual composition, section names, and component structure to match the selected `DESIGN.md`.
 
-Section order should be chosen by the generator within allowed rules rather than fixed globally by the runtime.
+Images should be placed wherever they best support the site. The prompt must not require a photo gallery by default. Qwen may use images in hero, about, service, feature, location, visual-band, card, or gallery treatments when appropriate, and it may omit images that do not improve the page.
 
-Phase 1 ordering rules:
-
-- `hero` first
-- `contact` near the end
-- `footer` last
-
-More dynamic sectioning can be introduced in Phase 2 alongside multi-page support.
+More dynamic sectioning and multi-page output can be introduced in Phase 2.
 
 ## Scope Boundary
 
 Phase 1 covers the flow from form input to first generated site.
 
-Post-generation editing is deferred to Phase 2.
+Direct generated-code editing and rich version comparison are deferred to Phase 2. Form-based `Edit + Regenerate` is part of Phase 1.
 
 Release guardrails for direct customer use are deferred to a later Release Phase and are out of scope for today's work.
 
@@ -237,3 +239,9 @@ Optional input:
 
 - Pricing or price range as a single optional text field
 - Multiple images supplied by the user and copied into the project workspace
+
+## Future Data Storage
+
+Phase 1 should keep the filesystem as the source of truth for generated projects and generated code.
+
+Future phases may introduce `Postgres` for project indexes, users, generation runs, version records, logs, deployment records, contact-form submissions, and guardrail audit results. Generated code and assets can remain on disk or object storage while metadata and operational state move into the database.

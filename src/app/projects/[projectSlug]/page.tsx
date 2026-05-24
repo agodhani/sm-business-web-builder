@@ -1,9 +1,7 @@
 import { RetryGenerationButton } from "../../../components/projects/retry-generation-button";
-import { GeneratedPage } from "../../../components/preview/generated-page";
 import { GENERATED_PROJECTS_ROOT } from "../../../lib/config";
 import { getManifestStatusLabel } from "../../../lib/projects/project-manifest";
 import { getProjectManifest, getProjectPageData } from "../../../lib/projects/project-query";
-import { loadStyleById } from "../../../lib/styles/load-style";
 import type { GeneratedPageData } from "../../../lib/types/page-data";
 
 type ProjectPreviewPageProps = {
@@ -45,17 +43,15 @@ export default async function ProjectPreviewPage({ params }: ProjectPreviewPageP
     );
   }
 
-  const loadedStyle = await loadStyleById(manifest.selectedStyleId);
-
   return (
     <main>
       <p className="step-copy">
         Project: <strong>{manifest.projectName}</strong> · Status: <strong>{statusLabel}</strong>
       </p>
-      <GeneratedPage
-        pageData={pageData}
-        style={loadedStyle.style}
-        assetBasePath={`/api/projects/${projectSlug}/preview?asset=`}
+      <iframe
+        src={`/api/projects/${projectSlug}/page-html`}
+        style={{ width: "100%", height: "80vh", border: "none", display: "block" }}
+        title={manifest.projectName}
       />
     </main>
   );

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** Use one task at a time in dependency order. Do not skip verification steps. Steps use checkbox syntax for tracking.
 
-**Goal:** Build a local `Next.js` website builder that collects small-business input, runs an `Ollama`-backed generation pipeline, persists project artifacts, and previews a generated single-page site through the builder app.
+**Goal:** Build a local `Next.js` website builder that collects small-business input, runs an `Ollama`-backed generation pipeline, persists project artifacts, generates a standalone single-page `Next.js` site per project version, and previews that generated site as a separate local process.
 
-**Architecture:** The builder app owns the full workflow. Users fill out a multi-step wizard, submit once, and the app creates a project workspace under `generated_projects/<project-slug>/v1/`. Generation runs through a provider-agnostic LLM connector, produces persisted intermediate artifacts, then emits fixed-schema page data rendered by a shared internal runtime for preview.
+**Architecture:** The builder app owns orchestration, persistence, dependency installation, validation, preview process management, and project/version metadata. Users fill out a multi-step wizard, submit once, and the app creates a project workspace under `generated_projects/<project-slug>/v1/`. Generation runs through a provider-agnostic LLM connector, produces persisted intermediate artifacts, then emits a validated file bundle for a standalone generated `Next.js` site under `v1/site/`. Reopening a project allows the user to start the generated site's preview process again. The primary regeneration path is `Edit + Regenerate`, which loads the active version's saved form input, lets the user change any field including images, and writes the next version folder.
 
 **Tech Stack:** `Next.js`, `TypeScript`, `React`, `Zod`, local filesystem APIs, `Ollama` HTTP API
 
@@ -20,10 +20,14 @@
 - `src/app/layout.tsx`
 - `src/app/page.tsx`
 - `src/app/projects/[projectSlug]/page.tsx`
+- `src/app/projects/[projectSlug]/edit/page.tsx`
 - `src/app/api/projects/route.ts`
 - `src/app/api/projects/[projectSlug]/generate/route.ts`
 - `src/app/api/projects/[projectSlug]/retry/route.ts`
-- `src/app/api/projects/[projectSlug]/preview/route.ts`
+- `src/app/api/projects/[projectSlug]/input/route.ts`
+- `src/app/api/projects/[projectSlug]/regenerate/route.ts`
+- `src/app/api/projects/[projectSlug]/preview/start/route.ts`
+- `src/app/api/projects/[projectSlug]/preview/stop/route.ts`
 
 ### UI
 
@@ -36,23 +40,17 @@
 - `src/components/wizard/review-generate-step.tsx`
 - `src/components/wizard/wizard-shell.tsx`
 - `src/components/projects/project-list.tsx`
-- `src/components/preview/generated-page.tsx`
-- `src/components/preview/sections/hero-section.tsx`
-- `src/components/preview/sections/services-section.tsx`
-- `src/components/preview/sections/about-section.tsx`
-- `src/components/preview/sections/pricing-section.tsx`
-- `src/components/preview/sections/gallery-section.tsx`
-- `src/components/preview/sections/contact-section.tsx`
-- `src/components/preview/sections/footer-section.tsx`
+- `src/components/projects/preview-controls.tsx`
+- `src/components/projects/edit-regenerate-button.tsx`
 
 ### Domain and validation
 
 - `src/lib/config.ts`
 - `src/lib/types/project.ts`
 - `src/lib/types/style.ts`
-- `src/lib/types/page-data.ts`
+- `src/lib/types/generated-site.ts`
 - `src/lib/validation/wizard-schema.ts`
-- `src/lib/validation/page-data-schema.ts`
+- `src/lib/validation/generated-site-schema.ts`
 - `src/lib/validation/style-schema.ts`
 
 ### Styles and generation
@@ -69,12 +67,18 @@
 - `src/lib/generation/prompts/brief-prompt.ts`
 - `src/lib/generation/prompts/page-plan-prompt.ts`
 - `src/lib/generation/prompts/story-prompt.ts`
-- `src/lib/generation/prompts/page-data-prompt.ts`
+- `src/lib/generation/prompts/site-code-prompt.ts`
 - `src/lib/generation/pipeline.ts`
 - `src/lib/generation/stages/create-brief.ts`
 - `src/lib/generation/stages/create-page-plan.ts`
 - `src/lib/generation/stages/create-story-requirements.ts`
-- `src/lib/generation/stages/create-page-data.ts`
+- `src/lib/generation/stages/create-site-code.ts`
+- `src/lib/generated-site/write-site-files.ts`
+- `src/lib/generated-site/install-dependencies.ts`
+- `src/lib/generated-site/validate-generated-site.ts`
+- `src/lib/preview/preview-process-manager.ts`
+- `src/lib/preview/preview-port.ts`
+- `src/lib/preview/preview-state.ts`
 
 ### Tests
 
@@ -82,13 +86,45 @@
 - `src/lib/projects/__tests__/project-storage.test.ts`
 - `src/lib/projects/__tests__/project-manifest.test.ts`
 - `src/lib/validation/__tests__/wizard-schema.test.ts`
-- `src/lib/validation/__tests__/page-data-schema.test.ts`
+- `src/lib/validation/__tests__/generated-site-schema.test.ts`
 - `src/lib/llm/__tests__/ollama-connector.test.ts`
 - `src/lib/generation/__tests__/pipeline.test.ts`
-- `src/components/preview/__tests__/generated-page.test.tsx`
 - `src/app/api/projects/__tests__/projects-route.test.ts`
 - `src/app/api/projects/__tests__/generate-route.test.ts`
 - `src/app/api/projects/__tests__/retry-route.test.ts`
+- `src/app/api/projects/__tests__/regenerate-route.test.ts`
+- `src/app/api/projects/__tests__/preview-process-route.test.ts`
+
+### Generated project version shape
+
+- `generated_projects/<project-slug>/manifest.json`
+- `generated_projects/<project-slug>/v1/raw-input.json`
+- `generated_projects/<project-slug>/v1/assets/`
+- `generated_projects/<project-slug>/v1/artifacts/brief.json`
+- `generated_projects/<project-slug>/v1/artifacts/page-plan.json`
+- `generated_projects/<project-slug>/v1/artifacts/story-requirements.json`
+- `generated_projects/<project-slug>/v1/artifacts/site-code-generation.json`
+- `generated_projects/<project-slug>/v1/artifacts/install.log`
+- `generated_projects/<project-slug>/v1/artifacts/build.log`
+- `generated_projects/<project-slug>/v1/artifacts/preview.log`
+- `generated_projects/<project-slug>/v1/site/package.json`
+- `generated_projects/<project-slug>/v1/site/app/layout.tsx`
+- `generated_projects/<project-slug>/v1/site/app/page.tsx`
+- `generated_projects/<project-slug>/v1/site/app/globals.css`
+- `generated_projects/<project-slug>/v1/site/components/`
+- `generated_projects/<project-slug>/v1/site/public/`
+
+Each regeneration writes a new sibling version folder such as `v2` or `v3`.
+
+### Revised Generation and Preview Decisions
+
+- Qwen generates a complete standalone `Next.js` file bundle for each version.
+- Qwen may choose dependencies and must output a complete generated-site `package.json`.
+- Phase 1 local generation assumes generated code is trusted; production guardrails are deferred to the Release Phase.
+- Images are passed as available assets and may be used wherever they improve the site. Do not force a gallery by default.
+- The generated site is installed and run with per-project dependencies inside its own `site/` directory.
+- The builder launches one generated-site preview process at a time on an available local port and stores preview metadata/logs.
+- `Edit + Regenerate` is the primary iteration path and creates a new version folder.
 
 ---
 
@@ -124,12 +160,12 @@
 **Files:**
 - Create: `src/lib/types/project.ts`
 - Create: `src/lib/types/style.ts`
-- Create: `src/lib/types/page-data.ts`
+- Create: `src/lib/types/generated-site.ts`
 - Create: `src/lib/validation/wizard-schema.ts`
-- Create: `src/lib/validation/page-data-schema.ts`
+- Create: `src/lib/validation/generated-site-schema.ts`
 - Create: `src/lib/validation/style-schema.ts`
 - Create: `src/lib/validation/__tests__/wizard-schema.test.ts`
-- Create: `src/lib/validation/__tests__/page-data-schema.test.ts`
+- Create: `src/lib/validation/__tests__/generated-site-schema.test.ts`
 
 - [ ] Define the wizard input schema with required fields:
   - project name
@@ -145,26 +181,22 @@
   - pricing text
   - image uploads
   - preferences text
-- [ ] Define the fixed page-data schema with supported section types:
-  - `hero`
-  - `services`
-  - `about`
-  - `pricing`
-  - `gallery`
-  - `contact`
-  - `footer`
-- [ ] Encode ordering rules in validation or generation helpers:
-  - `hero` first
-  - `contact` near the end
-  - `footer` last
+- [ ] Define the generated-site file bundle schema.
+- [ ] Require generated-site files:
+  - `package.json`
+  - `app/layout.tsx`
+  - `app/page.tsx`
+  - `app/globals.css`
+- [ ] Validate safe relative paths and reject files outside the generated `site/` folder.
+- [ ] Require generated-site `package.json` scripts for install/build/dev validation.
 - [ ] Add tests for valid and invalid payloads.
 
 **Verification**
-- Run: `npm test -- wizard-schema page-data-schema`
+- Run: `npm test -- wizard-schema generated-site-schema`
 - Expected: validation tests pass
 
 **Deliverable**
-- Stable typed contracts for inputs, styles, and generated page data.
+- Stable typed contracts for inputs, styles, and generated site bundles.
 
 ---
 
@@ -207,7 +239,8 @@
 - Create: `src/lib/projects/__tests__/project-storage.test.ts`
 - Create: `src/lib/projects/__tests__/project-manifest.test.ts`
 
-- [ ] Define project workspace paths under `generated_projects/<project-slug>/v1/`.
+- [ ] Define project workspace paths under `generated_projects/<project-slug>/<version>/`.
+- [ ] Track `activeVersion`, `latestVersion`, and per-version status in the project manifest.
 - [ ] Default project name from business name while allowing override.
 - [ ] Create manifest structure with:
   - project name
@@ -220,7 +253,8 @@
   - raw form input
   - manifest
   - intermediate artifacts
-  - final page data
+  - generated site code
+  - install/build/preview logs
   - copied images
   - preview metadata
 - [ ] Preserve failed generation artifacts instead of deleting them.
@@ -359,12 +393,12 @@
 
 - [ ] Combine the normalized brief with the selected style object.
 - [ ] Generate a page plan that decides:
-  - which supported sections to include
-  - section ordering within allowed rules
+  - which content areas are useful
+  - recommended order and visual emphasis
   - visual emphasis hints
   - copy direction
 - [ ] Persist the page plan artifact.
-- [ ] Fail if the plan violates section or ordering rules.
+- [ ] Fail only if the plan omits required factual coverage or contradicts the brief.
 
 **Verification**
 - Run: `npm test -- pipeline`
@@ -395,56 +429,55 @@
 
 ---
 
-## Task 11: Build the Shared Runtime and Section Components
+## Task 11: Define Site-Code Prompt and File Bundle Writer
 
 **Files:**
-- Create: `src/components/preview/generated-page.tsx`
-- Create: `src/components/preview/sections/hero-section.tsx`
-- Create: `src/components/preview/sections/services-section.tsx`
-- Create: `src/components/preview/sections/about-section.tsx`
-- Create: `src/components/preview/sections/pricing-section.tsx`
-- Create: `src/components/preview/sections/gallery-section.tsx`
-- Create: `src/components/preview/sections/contact-section.tsx`
-- Create: `src/components/preview/sections/footer-section.tsx`
-- Create: `src/components/preview/__tests__/generated-page.test.tsx`
+- Create: `src/lib/generation/prompts/site-code-prompt.ts`
+- Create: `src/lib/generated-site/write-site-files.ts`
+- Modify: `src/lib/generation/types.ts`
+- Modify: `src/lib/validation/generated-site-schema.ts`
 
-- [ ] Build a shared renderer that consumes fixed page-data schema.
-- [ ] Map each section type to one section component.
-- [ ] Apply style tokens from the selected style object.
-- [ ] Ensure sections can be omitted safely when absent.
-- [ ] Add rendering tests for valid combinations of supported sections.
+- [ ] Prompt Qwen to return JSON only using the generated-site file bundle schema.
+- [ ] Include brief, page plan, story requirements, selected style, and available image metadata.
+- [ ] Require a standalone single-page `Next.js` App Router site.
+- [ ] Require a complete generated-site `package.json`.
+- [ ] Instruct Qwen to use provided images wherever they best support the design and not to force a gallery.
+- [ ] Write validated bundle files into `<version>/site/`.
+- [ ] Copy selected images into `<version>/site/public/images/`.
 
 **Verification**
-- Run: `npm test -- generated-page`
-- Expected: preview renderer tests pass
+- Run: `npm test -- generated-site-schema`
+- Expected: generated-site bundle tests pass
 
 **Deliverable**
-- A reusable runtime that can render generated site data.
+- A prompt and writer for standalone generated `Next.js` site code.
 
 ---
 
-## Task 12: Implement Final Page-Data Generation
+## Task 12: Implement Final Site-Code Generation
 
 **Files:**
-- Create: `src/lib/generation/prompts/page-data-prompt.ts`
-- Create: `src/lib/generation/stages/create-page-data.ts`
-- Modify: `src/lib/validation/page-data-schema.ts`
+- Create: `src/lib/generation/stages/create-site-code.ts`
+- Modify: `src/lib/generation/pipeline.ts`
+- Modify: `src/lib/projects/project-storage.ts`
 
-- [ ] Generate final structured page data from:
+- [ ] Generate final standalone site code from:
   - brief
   - page plan
   - story requirements
   - selected style
-- [ ] Validate the output against the fixed page-data schema.
-- [ ] Reject invalid section types or invalid ordering.
-- [ ] Persist validated page data into the project workspace.
+  - available image metadata
+- [ ] Validate the file bundle before writing.
+- [ ] Persist raw generation request/response under version artifacts.
+- [ ] Persist generated code into `<version>/site/`.
+- [ ] Mark `failedStage = "site-code"` on generation or validation failure.
 
 **Verification**
-- Run: `npm test -- page-data-schema pipeline`
-- Expected: final stage validation tests pass
+- Run: `npm test -- pipeline`
+- Expected: final site-code stage tests pass
 
 **Deliverable**
-- Validated page data ready for preview rendering.
+- Generated standalone `Next.js` site code ready for install/build validation.
 
 ---
 
@@ -462,7 +495,9 @@
   - create brief
   - create page plan
   - create story requirements
-  - create page data
+  - create site code
+  - install generated-site dependencies
+  - validate generated-site build
 - [ ] Update manifest state per stage.
 - [ ] Preserve stage outputs on success and failure.
 - [ ] Return failed stage name on error.
@@ -481,24 +516,30 @@
 
 ---
 
-## Task 14: Serve Preview Through the Builder App
+## Task 14: Manage Separate Preview Process
 
 **Files:**
-- Create: `src/app/api/projects/[projectSlug]/preview/route.ts`
+- Create: `src/lib/preview/preview-process-manager.ts`
+- Create: `src/lib/preview/preview-port.ts`
+- Create: `src/lib/preview/preview-state.ts`
+- Create: `src/app/api/projects/[projectSlug]/preview/start/route.ts`
+- Create: `src/app/api/projects/[projectSlug]/preview/stop/route.ts`
 - Create: `src/app/projects/[projectSlug]/page.tsx`
-- Modify: `src/components/preview/generated-page.tsx`
 
-- [ ] Serve one active preview through the builder app.
-- [ ] Load persisted page data and selected style for the requested project.
-- [ ] Render the preview route from project artifacts, not in-memory wizard state.
-- [ ] Ensure reopening a project reproduces the same preview.
+- [ ] Launch the active generated version as a separate local process.
+- [ ] Allocate an available local port.
+- [ ] Capture preview stdout/stderr into `<version>/artifacts/preview.log`.
+- [ ] Store preview metadata with status, port, URL, and version.
+- [ ] Stop the currently running generated preview before starting another one.
+- [ ] Provide `Start Preview` and `Stop Preview` actions.
+- [ ] Ensure reopening a project can start preview again without regeneration.
 
 **Verification**
 - Run: `npm run dev`
-- Expected: `/projects/<projectSlug>` renders the saved generated site
+- Expected: `/projects/<projectSlug>` can start and show the generated site's preview URL
 
 **Deliverable**
-- Stable local preview served by the builder app.
+- Stable local preview process management for generated sites.
 
 ---
 
@@ -516,8 +557,10 @@
   - last updated time
   - latest build state
 - [ ] Add reopen actions for:
-  - open preview
-  - rerun preview
+  - start preview
+  - stop preview
+  - edit and regenerate
+  - regenerate without changes
   - retry generation after failure
 
 **Verification**
@@ -556,11 +599,13 @@
 - Modify as needed based on defects discovered during verification.
 
 - [ ] Run the complete happy path with a real project.
-- [ ] Run a no-images case and confirm `gallery` is omitted.
+- [ ] Run an images case and confirm images can be placed outside a gallery.
+- [ ] Run a no-images case and confirm the generated site still works.
 - [ ] Run a no-pricing case and confirm `pricing` is omitted.
 - [ ] Confirm responsive behavior on desktop and mobile widths.
 - [ ] Confirm generated copy is factually grounded in the input.
-- [ ] Confirm project reopen reproduces preview from disk.
+- [ ] Confirm project reopen can start preview again from generated site files.
+- [ ] Confirm edit and regenerate writes a new version folder.
 
 **Verification**
 - Run: `npm test`
@@ -598,8 +643,9 @@
 ## Notes for the Implementing Agent
 
 - Keep `DESIGN.md` files as the style source of truth.
-- Do not add post-generation editing in phase 1.
+- Make form-based `Edit + Regenerate` the primary iteration path in phase 1.
 - Do not add multi-page logic in phase 1.
 - Do not add contact form submission in phase 1.
-- Do not introduce multiple live preview servers.
-- Do not replace fixed page-data schema with freeform generated code.
+- Do not introduce multiple concurrent generated-site preview processes.
+- Generate standalone `Next.js` site code instead of fixed page data rendered by generic builder components.
+- Do not force image uploads into a gallery; let Qwen place images where they improve the design.

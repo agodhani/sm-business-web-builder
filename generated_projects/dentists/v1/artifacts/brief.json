@@ -1,0 +1,26 @@
+{
+  "projectName": "Dentists",
+  "businessName": "New Dental",
+  "businessCategory": "Dental Clinic",
+  "businessDescription": "We make your teeth shine like they are brand new!!",
+  "services": [
+    "Teeth cleaning",
+    "Cavity Removal"
+  ],
+  "contact": {
+    "phone": "111-111-1111",
+    "email": "hello@dentists.com"
+  },
+  "location": {
+    "city": "Boston",
+    "state": "MA"
+  },
+  "selectedStyleId": "cohere",
+  "pricing": "$100 per teeth cleaning, $1000 for cavity removal",
+  "imageAssetPaths": [
+    "generated_projects/dentists/v1/assets/6D32D998-DC80-4D39-915A-AE6D03B8E79D_1_105_c.jpeg",
+    "generated_projects/dentists/v1/assets/9F28C41E-1A3B-4D87-B1D6-CA2EECDE3F1F_1_105_c.jpeg",
+    "generated_projects/dentists/v1/assets/062D2740-83E6-491E-82BB-5E8BD3B3A3CB_1_105_c.jpeg",
+    "generated_projects/dentists/v1/assets/091B910E-15DD-42CF-9C35-B4128BB7CA33_1_105_c.jpeg"
+  ]
+}

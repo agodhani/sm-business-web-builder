@@ -1,0 +1,13 @@
+{
+  "projectName": "Dentists",
+  "projectSlug": "dentists",
+  "businessName": "New Dental",
+  "selectedStyleId": "cohere",
+  "version": "v1",
+  "status": "generated",
+  "currentStage": null,
+  "failedStage": null,
+  "createdAt": "2026-05-24T16:42:24.104Z",
+  "updatedAt": "2026-05-24T16:43:18.329Z",
+  "previewPath": "/projects/dentists"
+}

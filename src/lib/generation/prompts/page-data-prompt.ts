@@ -26,6 +26,8 @@ export function buildPageDataPrompt({
     "- footer must be last.",
     "- contact must be before footer when present.",
     "- pricing and gallery are optional only when absent from plan.",
+    "- For gallery sections, use each path from brief.imageAssetPaths verbatim as the image path value. Do not invent or modify image paths.",
+    "- Omit the gallery section entirely when brief.imageAssetPaths is empty or absent.",
     "",
     "Required JSON shape:",
     "{",

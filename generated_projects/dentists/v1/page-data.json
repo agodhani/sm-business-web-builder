@@ -1,0 +1,78 @@
+{
+  "site": {
+    "projectName": "Dentists",
+    "businessName": "New Dental",
+    "category": "Dental Clinic",
+    "styleId": "cohere"
+  },
+  "theme": {
+    "styleId": "cohere"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "headline": "New Dental",
+      "subheadline": "We make your teeth shine like they are brand new!!",
+      "primaryCta": "Contact Us",
+      "secondaryCta": "View Services"
+    },
+    {
+      "type": "services",
+      "title": "Our Services",
+      "items": [
+        {
+          "name": "Teeth cleaning",
+          "description": "Professional cleaning to keep your smile healthy."
+        },
+        {
+          "name": "Cavity Removal",
+          "description": "Effective treatment to remove decay and restore teeth."
+        }
+      ]
+    },
+    {
+      "type": "pricing",
+      "title": "Pricing",
+      "text": "$100 per teeth cleaning, $1000 for cavity removal"
+    },
+    {
+      "type": "gallery",
+      "title": "Gallery",
+      "images": [
+        {
+          "alt": "Dental Clinic Image 1",
+          "path": "generated_projects/dentists/v1/assets/6D32D998-DC80-4D39-915A-AE6D03B8E79D_1_105_c.jpeg"
+        },
+        {
+          "alt": "Dental Clinic Image 2",
+          "path": "generated_projects/dentists/v1/assets/9F28C41E-1A3B-4D87-B1D6-CA2EECDE3F1F_1_105_c.jpeg"
+        },
+        {
+          "alt": "Dental Clinic Image 3",
+          "path": "generated_projects/dentists/v1/assets/062D2740-83E6-491E-82BB-5E8BD3B3A3CB_1_105_c.jpeg"
+        },
+        {
+          "alt": "Dental Clinic Image 4",
+          "path": "generated_projects/dentists/v1/assets/091B910E-15DD-42CF-9C35-B4128BB7CA33_1_105_c.jpeg"
+        }
+      ]
+    },
+    {
+      "type": "about",
+      "title": "About New Dental",
+      "body": "New Dental is a Dental Clinic located in Boston, MA."
+    },
+    {
+      "type": "contact",
+      "title": "Contact Us",
+      "phone": "111-111-1111",
+      "email": "hello@dentists.com",
+      "city": "Boston",
+      "state": "MA"
+    },
+    {
+      "type": "footer",
+      "text": "© New Dental, Boston, MA. All rights reserved."
+    }
+  ]
+}

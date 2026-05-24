@@ -50,7 +50,7 @@ export function ReviewGenerateStep({
         <dd>{state.styleId || "—"}</dd>
 
         <dt>Images</dt>
-        <dd>{state.selectedImageNames.length > 0 ? state.selectedImageNames.join(", ") : "None selected"}</dd>
+        <dd>{state.selectedImages.length > 0 ? state.selectedImages.map((f) => f.name).join(", ") : "None selected"}</dd>
       </dl>
 
       {errors.submit ? <p className="field-error">{errors.submit}</p> : null}

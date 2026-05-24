@@ -16,8 +16,11 @@ Let a customer fill out a form, choose one style reference, generate a single-pa
 - Run the generation pipeline
 - Save artifacts and generated code into a project folder
 - Generate a standalone `Next.js` site under the active project version
-- Install per-project dependencies for the generated site
-- Launch the generated site as a separate local preview process
+- Install per-project dependencies for the generated site with `npm`
+- Show install/build failure state and logs when generated-site validation fails
+- Run a limited Qwen repair attempt for failed generated-site install/build validation
+- Launch the generated site as a separate local preview process after successful generation
+- Let the user explicitly start and stop the generated-site preview after generation
 - Reopen an existing project to start the preview again when it is not running
 - Reopen the saved form, edit submitted values including images, and regenerate into a new version folder
 - Show which stage failed if generation breaks
@@ -36,6 +39,7 @@ Let a customer fill out a form, choose one style reference, generate a single-pa
 - Working contact forms
 - Hosted deployment
 - Multiple concurrent previews
+- Automatic preview respawn after the builder app restarts
 - In-app export or download
 - Review or edit of intermediate artifacts
 - Direct generated-code editing

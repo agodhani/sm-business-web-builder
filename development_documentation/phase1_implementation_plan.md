@@ -64,14 +64,10 @@
 - `src/lib/projects/project-query.ts`
 - `src/lib/llm/connector.ts`
 - `src/lib/llm/ollama-connector.ts`
-- `src/lib/generation/prompts/brief-prompt.ts`
-- `src/lib/generation/prompts/page-plan-prompt.ts`
-- `src/lib/generation/prompts/story-prompt.ts`
 - `src/lib/generation/prompts/site-code-prompt.ts`
 - `src/lib/generation/pipeline.ts`
-- `src/lib/generation/stages/create-brief.ts`
-- `src/lib/generation/stages/create-page-plan.ts`
-- `src/lib/generation/stages/create-story-requirements.ts`
+- `src/lib/generation/build-site-brief.ts`
+- `src/lib/generation/build-generation-context.ts`
 - `src/lib/generation/stages/create-site-code.ts`
 - `src/lib/generated-site/write-site-files.ts`
 - `src/lib/generated-site/install-dependencies.ts`
@@ -101,8 +97,7 @@
 - `generated_projects/<project-slug>/v1/raw-input.json`
 - `generated_projects/<project-slug>/v1/assets/`
 - `generated_projects/<project-slug>/v1/artifacts/brief.json`
-- `generated_projects/<project-slug>/v1/artifacts/page-plan.json`
-- `generated_projects/<project-slug>/v1/artifacts/story-requirements.json`
+- `generated_projects/<project-slug>/v1/artifacts/generation-context.json`
 - `generated_projects/<project-slug>/v1/artifacts/site-code-generation.json`
 - `generated_projects/<project-slug>/v1/artifacts/install.log`
 - `generated_projects/<project-slug>/v1/artifacts/build.log`
@@ -122,9 +117,16 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 - Qwen may choose dependencies and must output a complete generated-site `package.json`.
 - Phase 1 local generation assumes generated code is trusted; production guardrails are deferred to the Release Phase.
 - Images are passed as available assets and may be used wherever they improve the site. Do not force a gallery by default.
-- The generated site is installed and run with per-project dependencies inside its own `site/` directory.
+- Form input is already structured. Phase 1 should build the normalized brief and generation context deterministically instead of asking Qwen to normalize, plan, or produce story requirements before final site generation.
+- The primary model call is the site-code generation call. Repair calls are only for generated-site install/build failures.
+- The generated site is installed with `npm` and per-project dependencies inside its own `site/` directory.
+- Failed generated-site install/build validation remains visible to the user with logs.
+- A limited Qwen repair attempt may run only after generated-site install/build validation fails.
 - The builder launches one generated-site preview process at a time on an available local port and stores preview metadata/logs.
+- Successful generation auto-starts preview after validation passes.
+- Builder app restarts must not automatically respawn generated-site previews; users explicitly start preview again.
 - `Edit + Regenerate` is the primary iteration path and creates a new version folder.
+- `Regenerate Without Changes` is nice-to-have and not required for Phase 1.
 
 ---
 
@@ -362,74 +364,30 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 8: Implement Brief Generation Stage
+## Task 8: Build Deterministic Generation Context
 
 **Files:**
-- Create: `src/lib/generation/prompts/brief-prompt.ts`
-- Create: `src/lib/generation/stages/create-brief.ts`
+- Create: `src/lib/generation/build-site-brief.ts`
+- Create: `src/lib/generation/build-generation-context.ts`
 - Modify: `src/lib/projects/project-storage.ts`
 - Modify: `src/lib/types/project.ts`
 
-- [ ] Convert raw wizard input into the normalized site brief stage.
-- [ ] Use the connector to generate or refine normalized brief output where needed.
-- [ ] Persist the brief artifact to the project workspace.
+- [ ] Convert raw wizard input into deterministic normalized `brief.json`.
+- [ ] Build deterministic `generation-context.json` from the brief, selected style, preferences, and available image metadata.
+- [ ] Do not call Qwen for brief normalization, page planning, or story requirements.
+- [ ] Persist both artifacts to the project workspace.
 - [ ] Record stage status in the manifest.
 
 **Verification**
 - Run: `npm test -- pipeline`
-- Expected: brief stage test coverage passes after pipeline tests are added
+- Expected: deterministic generation context tests pass
 
 **Deliverable**
-- Persisted normalized brief artifact.
+- Persisted normalized brief and generation context artifacts.
 
 ---
 
-## Task 9: Implement Page Plan Generation Stage
-
-**Files:**
-- Create: `src/lib/generation/prompts/page-plan-prompt.ts`
-- Create: `src/lib/generation/stages/create-page-plan.ts`
-- Modify: `src/lib/styles/load-style.ts`
-
-- [ ] Combine the normalized brief with the selected style object.
-- [ ] Generate a page plan that decides:
-  - which content areas are useful
-  - recommended order and visual emphasis
-  - visual emphasis hints
-  - copy direction
-- [ ] Persist the page plan artifact.
-- [ ] Fail only if the plan omits required factual coverage or contradicts the brief.
-
-**Verification**
-- Run: `npm test -- pipeline`
-- Expected: page plan stage tests pass
-
-**Deliverable**
-- Persisted page plan tied to the selected style.
-
----
-
-## Task 10: Implement Story Requirements Generation Stage
-
-**Files:**
-- Create: `src/lib/generation/prompts/story-prompt.ts`
-- Create: `src/lib/generation/stages/create-story-requirements.ts`
-
-- [ ] Generate story requirements from the page plan.
-- [ ] Capture copy intent for each planned section.
-- [ ] Persist story requirements to disk.
-- [ ] Record success or failure in the manifest.
-
-**Verification**
-- Run: `npm test -- pipeline`
-- Expected: story requirements stage tests pass
-
-**Deliverable**
-- Persisted story requirements artifact.
-
----
-
-## Task 11: Define Site-Code Prompt and File Bundle Writer
+## Task 9: Define Site-Code Prompt and File Bundle Writer
 
 **Files:**
 - Create: `src/lib/generation/prompts/site-code-prompt.ts`
@@ -438,7 +396,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 - Modify: `src/lib/validation/generated-site-schema.ts`
 
 - [ ] Prompt Qwen to return JSON only using the generated-site file bundle schema.
-- [ ] Include brief, page plan, story requirements, selected style, and available image metadata.
+- [ ] Include deterministic generation context, selected style, and available image metadata.
 - [ ] Require a standalone single-page `Next.js` App Router site.
 - [ ] Require a complete generated-site `package.json`.
 - [ ] Instruct Qwen to use provided images wherever they best support the design and not to force a gallery.
@@ -454,7 +412,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 12: Implement Final Site-Code Generation
+## Task 10: Implement Final Site-Code Generation
 
 **Files:**
 - Create: `src/lib/generation/stages/create-site-code.ts`
@@ -462,9 +420,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 - Modify: `src/lib/projects/project-storage.ts`
 
 - [ ] Generate final standalone site code from:
-  - brief
-  - page plan
-  - story requirements
+  - deterministic generation context
   - selected style
   - available image metadata
 - [ ] Validate the file bundle before writing.
@@ -481,7 +437,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 13: Implement the End-to-End Generation Pipeline
+## Task 11: Implement the End-to-End Generation Pipeline
 
 **Files:**
 - Create: `src/lib/generation/pipeline.ts`
@@ -492,12 +448,16 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 - Create: `src/app/api/projects/__tests__/retry-route.test.ts`
 
 - [ ] Compose the stages in this order:
-  - create brief
-  - create page plan
-  - create story requirements
+  - validate and persist raw input
+  - build deterministic brief
+  - build deterministic generation context
   - create site code
-  - install generated-site dependencies
+  - install generated-site dependencies with `npm`
   - validate generated-site build
+- [ ] Preserve generated-site install and build logs.
+- [ ] Show install/build failure state and logs to the user.
+- [ ] Run a limited Qwen repair attempt only after generated-site install/build validation fails.
+- [ ] Preserve both the original failure output and repair attempt output.
 - [ ] Update manifest state per stage.
 - [ ] Preserve stage outputs on success and failure.
 - [ ] Return failed stage name on error.
@@ -516,7 +476,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 14: Manage Separate Preview Process
+## Task 12: Manage Separate Preview Process
 
 **Files:**
 - Create: `src/lib/preview/preview-process-manager.ts`
@@ -532,7 +492,9 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 - [ ] Store preview metadata with status, port, URL, and version.
 - [ ] Stop the currently running generated preview before starting another one.
 - [ ] Provide `Start Preview` and `Stop Preview` actions.
+- [ ] Auto-start preview immediately after successful generation and validation.
 - [ ] Ensure reopening a project can start preview again without regeneration.
+- [ ] Do not auto-respawn generated-site previews after the builder app restarts.
 
 **Verification**
 - Run: `npm run dev`
@@ -543,7 +505,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 15: Build the Reopen Project List
+## Task 13: Build the Reopen Project List
 
 **Files:**
 - Create: `src/components/projects/project-list.tsx`
@@ -560,7 +522,6 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
   - start preview
   - stop preview
   - edit and regenerate
-  - regenerate without changes
   - retry generation after failure
 
 **Verification**
@@ -572,7 +533,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 16: Add Failure Visibility and Status UX
+## Task 14: Add Failure Visibility and Status UX
 
 **Files:**
 - Modify: `src/components/wizard/review-generate-step.tsx`
@@ -593,7 +554,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 
 ---
 
-## Task 17: Final Quality Verification
+## Task 15: Final Quality Verification
 
 **Files:**
 - Modify as needed based on defects discovered during verification.
@@ -605,6 +566,7 @@ Each regeneration writes a new sibling version folder such as `v2` or `v3`.
 - [ ] Confirm responsive behavior on desktop and mobile widths.
 - [ ] Confirm generated copy is factually grounded in the input.
 - [ ] Confirm project reopen can start preview again from generated site files.
+- [ ] Confirm builder app restart does not auto-respawn generated-site preview.
 - [ ] Confirm edit and regenerate writes a new version folder.
 
 **Verification**

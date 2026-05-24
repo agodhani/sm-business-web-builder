@@ -73,18 +73,18 @@ Preferred deployment shape:
 - Use one configured default Ollama model in Phase 1
 - Keep the integration layer provider-agnostic through a separate connector so the model runtime or API provider can be swapped later
 
-Generation should run as a small pipeline rather than a single end-to-end model call.
+Generation should keep deterministic preparation separate from the primary model call.
 
 Phase 1 pipeline stages:
 
-1. Normalize form input into a structured site brief
-2. Build a page plan from the brief plus the selected style reference
-3. Build story requirements for the page from the initial plan
-4. Use the structured artifacts to drive a constrained final generation step
-5. Generate a standalone `Next.js` single-page site codebase into the project version folder
-6. Install the generated site's per-project dependencies
-7. Run build/start validation for the generated site
-8. Launch the generated site as a separate local preview process
+1. Validate wizard input with the form schema
+2. Deterministically normalize form input into a structured site brief
+3. Deterministically build a generation context from the brief, selected `DESIGN.md`, preferences, and available image metadata
+4. Make one primary Qwen call to generate a standalone `Next.js` single-page site file bundle
+5. Install the generated site's per-project dependencies with `npm`
+6. Run build validation for the generated site
+7. If install or build validation fails, run a limited repair attempt using the failure output
+8. Launch the generated site as a separate local preview process after successful generation and validation
 
 The LLM should generate polished website copy from factual business inputs supplied by the user.
 
@@ -94,7 +94,7 @@ User review of intermediate artifacts is deferred to Phase 2.
 
 Generated copy is not edited directly in Phase 1. The primary regeneration path is to reopen the saved form, edit the form values, and generate a new project version.
 
-Intermediate artifacts should be persisted so generation is debuggable and repeatable.
+Intermediate artifacts should be persisted so generation is debuggable and repeatable. Phase 1 should persist deterministic `brief.json` and `generation-context.json`; it should not use Qwen to re-normalize already structured form data.
 
 The generated code is assumed trusted in Phase 1 local development. Production-grade prompt safety, generated-code safety scanning, dependency allowlists, and malicious-input guardrails are deferred to the Release Phase.
 
@@ -112,8 +112,7 @@ Each project workspace should contain:
 - Version folders such as `v1`, `v2`, and `v3`
 - Per-version raw form data
 - Per-version normalized brief
-- Per-version page plan
-- Per-version story requirements
+- Per-version generation context
 - Per-version generated code under `site/`
 - Per-version copied assets
 - Per-version dependency, build, generation, and preview logs
@@ -133,7 +132,9 @@ Phase 1 should allow retrying generation from the same saved project after a fai
 
 In Phase 1, retry should rerun the full pipeline from the beginning rather than resuming from the failed stage.
 
-The primary regeneration path should be `Edit + Regenerate`: the builder loads the active version's saved form input into the wizard, the user can change any field including images, and submission creates a new version folder. A secondary `Regenerate Without Changes` action may create a new version from the active version's existing form input.
+The primary regeneration path should be `Edit + Regenerate`: the builder loads the active version's saved form input into the wizard, the user can change any field including images, and submission creates a new version folder. `Regenerate Without Changes` is a nice-to-have, not required for Phase 1.
+
+Install and build failures should remain visible to the user. A repair attempt may ask Qwen to fix the generated file bundle using the exact install/build failure output, but the original failure and repair logs must be preserved.
 
 ## Project Access
 
@@ -147,7 +148,9 @@ When reopening projects in Phase 1, the app should provide a simple project list
 
 Phase 1 supports one active generated-site preview process at a time.
 
-The builder app should launch the active generated version as a separate local `Next.js` process on an available local port, capture preview logs, and store the running URL in preview metadata. Reopening a generated project should provide a `Start Preview` action when no preview process is currently running.
+The builder app should launch the active generated version as a separate local `Next.js` process on an available local port, capture preview logs, and store the running URL in preview metadata. Successful generation should auto-start preview once validation passes. Reopening a generated project should provide mandatory `Start Preview` and `Stop Preview` actions.
+
+Preview processes are ephemeral. Restarting the builder app must not automatically respawn generated-site previews; the user must explicitly start preview again after an app restart.
 
 ## Export
 
@@ -172,7 +175,7 @@ The file bundle should be validated before writing files. Validation should at m
 
 Phase 1 generates a single-page site, but it should not force a fixed list of visual section types.
 
-The page plan can still describe likely content areas, such as:
+The deterministic generation context can describe likely content areas, such as:
 
 - `hero`
 - `services`

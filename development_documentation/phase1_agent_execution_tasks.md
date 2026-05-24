@@ -22,9 +22,11 @@
 - Persist artifacts to disk; do not keep generated output only in memory.
 - Use one configured default `Ollama` model.
 - Generate standalone `Next.js` site code for each project version instead of fixed page data rendered by generic builder components.
-- Use per-project dependencies for generated sites; the generated file bundle must include a generated-site `package.json`.
+- Use `npm` and per-project dependencies for generated sites; the generated file bundle must include a generated-site `package.json`.
 - Treat generated code as trusted for local Phase 1 development. Production guardrails for malicious prompts, generated code, and dependencies are deferred to the Release Phase.
 - Do not force uploaded images into a gallery. Prompt Qwen to place provided images wherever they best support the generated site.
+- Auto-start preview after successful generation and validation.
+- Do not auto-respawn generated-site previews after the builder app restarts; users must explicitly start preview again.
 - Keep Phase 1 single-page. Do not implement multi-page output, contact-form submission, hosted deployment, in-app export, multiple model providers, direct generated-code editing, visual version comparison, or production guardrails.
 - After each task, run the task-specific checks and record any failures in the final task note or commit body.
 
@@ -770,7 +772,9 @@
 
 ## Revised Architecture Task Packets
 
-Task Packets 23 onward supersede the fixed `page-data` preview architecture from Task Packets 15-18 while preserving useful completed work: wizard input, style loading, project persistence, Ollama connector, brief generation, page planning, story requirements, failure reporting, and project listing.
+Task Packets 23 onward supersede the fixed `page-data` preview architecture from Task Packets 15-18 and simplify generation to one primary Qwen site-code call. Wizard input, style loading, project persistence, Ollama connector, failure reporting, and project listing remain useful. The old LLM-generated brief, page-plan, and story-requirements stages should be replaced with deterministic brief/context builders.
+
+Existing files such as `brief-prompt.ts`, `page-plan-prompt.ts`, `story-prompt.ts`, and `page-data-prompt.ts` belong to the superseded pass. Do not use them as the revised Phase 1 source of truth.
 
 ---
 
@@ -847,24 +851,53 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 
 ---
 
-## Task Packet 25: Add Site Code Prompt
+## Task Packet 25: Add Deterministic Generation Context
 
 **Depends on:** Task Packet 24 and Task Packet 14
 
-**Goal:** Prompt Qwen to generate a complete standalone `Next.js` site from prior artifacts and selected style.
+**Goal:** Convert validated form input into deterministic artifacts for the single Qwen site-code call.
+
+**Files to create or modify:**
+- `src/lib/generation/build-site-brief.ts`
+- `src/lib/generation/build-generation-context.ts`
+- `src/lib/generation/types.ts`
+- `src/lib/projects/project-storage.ts`
+
+**Steps:**
+- [ ] Build `brief.json` deterministically from validated wizard input.
+- [ ] Build `generation-context.json` deterministically from brief, selected style, preferences, and available image metadata.
+- [ ] Do not call Qwen for brief normalization, page planning, or story requirements.
+- [ ] Preserve factual business, contact, location, pricing, service, and image metadata exactly.
+- [ ] Include image public paths that Qwen can use in generated-site code.
+- [ ] Persist deterministic artifacts under `<version>/artifacts/`.
+
+**Acceptance checks:**
+- [ ] Deterministic brief builder does not alter facts.
+- [ ] Generation context includes selected style and image metadata.
+- [ ] `npm run build` passes.
+
+**Commit:**
+- `feat: build deterministic generation context`
+
+---
+
+## Task Packet 26: Add Site Code Prompt
+
+**Depends on:** Task Packet 24 and Task Packet 25
+
+**Goal:** Prompt Qwen to generate a complete standalone `Next.js` site from deterministic context and selected style.
 
 **Files to create or modify:**
 - `src/lib/generation/prompts/site-code-prompt.ts`
-- `src/lib/generation/prompts/page-plan-prompt.ts`
-- `src/lib/generation/prompts/story-prompt.ts`
 - `src/lib/generation/types.ts`
 
 **Prompt requirements:**
 - [ ] Return JSON only using the generated-site file bundle shape.
 - [ ] Generate a single-page `Next.js` App Router site.
 - [ ] Include a complete `package.json` for the generated site.
+- [ ] Require generated-site scripts compatible with `npm install`, `npm run build`, and `npm run dev`.
 - [ ] Use the selected `DESIGN.md` as the visual source of truth.
-- [ ] Use only factual business/contact/location/pricing/service facts from provided artifacts.
+- [ ] Use only factual business/contact/location/pricing/service facts from deterministic generation context.
 - [ ] Place provided images wherever they best support the site: hero, about, services, visual bands, location/contact, cards, or gallery only when appropriate.
 - [ ] Do not create a photo gallery by default.
 - [ ] Do not invent image paths; use supplied generated-site public paths exactly.
@@ -873,6 +906,7 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 **Acceptance checks:**
 - [ ] Prompt function exports typed input and string output.
 - [ ] Prompt includes available image metadata and explicit non-gallery image guidance.
+- [ ] Prompt is the only primary Qwen call before install/build repair.
 - [ ] `npm run build` passes.
 
 **Commit:**
@@ -880,9 +914,9 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 
 ---
 
-## Task Packet 26: Implement Site Code Generation Stage
+## Task Packet 27: Implement Site Code Generation Stage
 
-**Depends on:** Task Packet 25
+**Depends on:** Task Packet 26
 
 **Goal:** Generate and persist standalone generated-site code under the active version folder.
 
@@ -894,7 +928,7 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 - `src/lib/generation/__tests__/pipeline.test.ts`
 
 **Steps:**
-- [ ] Load brief, page plan, story requirements, selected style, and available image metadata.
+- [ ] Load deterministic generation context, selected style, and available image metadata.
 - [ ] Call Qwen through the existing `Ollama` connector with the site-code prompt.
 - [ ] Validate the returned file bundle.
 - [ ] Write generated files into `<version>/site/`.
@@ -912,9 +946,9 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 
 ---
 
-## Task Packet 27: Install and Validate Generated Site
+## Task Packet 28: Install and Validate Generated Site
 
-**Depends on:** Task Packet 26
+**Depends on:** Task Packet 27
 
 **Goal:** Confirm generated projects can install and build before preview.
 
@@ -931,6 +965,9 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 - [ ] Run generated-site build validation.
 - [ ] Capture build output to `<version>/artifacts/build.log`.
 - [ ] Persist a validation report.
+- [ ] Show install/build failure state and logs to the user.
+- [ ] Run a limited Qwen repair attempt only after install/build validation failure.
+- [ ] Preserve original failure output and repair attempt output.
 - [ ] Mark `failedStage = "install"` or `failedStage = "build"` when validation fails.
 - [ ] Mark the version generated only after site-code, install, and build validation succeed.
 
@@ -938,15 +975,16 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 - [ ] Mocked install/build success marks version generated.
 - [ ] Mocked install failure persists install log and failed stage.
 - [ ] Mocked build failure persists build log and failed stage.
+- [ ] Mocked install/build failure can trigger one repair attempt.
 
 **Commit:**
 - `feat: validate generated next sites`
 
 ---
 
-## Task Packet 28: Add Preview Process Manager
+## Task Packet 29: Add Preview Process Manager
 
-**Depends on:** Task Packet 27
+**Depends on:** Task Packet 28
 
 **Goal:** Launch, stop, and relaunch generated-site previews as separate local processes.
 
@@ -965,21 +1003,26 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 - [ ] Poll the local preview URL until it responds.
 - [ ] Stop the currently running generated-site preview before starting another one.
 - [ ] Store preview metadata with status, port, URL, started time, and version.
+- [ ] Auto-start preview after successful generation and validation.
+- [ ] Support explicit `Start Preview` after generation when no preview process is running.
+- [ ] Support explicit `Stop Preview` for a running generated-site preview.
+- [ ] Do not auto-respawn generated-site previews after the builder app restarts.
 - [ ] Expose clear failure state if preview start fails.
 
 **Acceptance checks:**
 - [ ] Starting preview returns a local URL.
 - [ ] Starting a second preview stops the first one.
 - [ ] Stopped previews can be started again without regeneration.
+- [ ] Restarting the builder app does not automatically restart generated-site previews.
 
 **Commit:**
 - `feat: manage generated site preview processes`
 
 ---
 
-## Task Packet 29: Build Edit and Regenerate Flow
+## Task Packet 30: Build Edit and Regenerate Flow
 
-**Depends on:** Task Packet 23 and Task Packet 27
+**Depends on:** Task Packet 23 and Task Packet 28
 
 **Goal:** Make `Edit + Regenerate` the primary iteration path.
 
@@ -1013,9 +1056,9 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 
 ---
 
-## Task Packet 30: Update Project Detail and Reopen UX
+## Task Packet 31: Update Project Detail and Reopen UX
 
-**Depends on:** Task Packet 28 and Task Packet 29
+**Depends on:** Task Packet 29 and Task Packet 30
 
 **Goal:** Make generated projects easy to preview, stop, restart, and regenerate.
 
@@ -1032,7 +1075,7 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 - [ ] Show `Stop Preview` when the generated site is running.
 - [ ] Embed or link the running generated-site preview URL.
 - [ ] Make `Edit + Regenerate` the primary action.
-- [ ] Add a secondary `Regenerate Without Changes` action.
+- [ ] Leave `Regenerate Without Changes` as a nice-to-have, not required for Phase 1.
 - [ ] Expose install, build, generation, and preview failure logs when available.
 
 **Acceptance checks:**
@@ -1045,9 +1088,9 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 
 ---
 
-## Task Packet 31: Revised End-to-End Verification
+## Task Packet 32: Revised End-to-End Verification
 
-**Depends on:** Task Packet 30
+**Depends on:** Task Packet 31
 
 **Goal:** Confirm revised Option A architecture works end to end.
 
@@ -1058,9 +1101,12 @@ Task Packets 23 onward supersede the fixed `page-data` preview architecture from
 - [ ] Confirm no-gallery output is acceptable when Qwen chooses a better layout.
 - [ ] Confirm generated-site dependencies install per project.
 - [ ] Confirm generated-site build validation runs.
+- [ ] Confirm install/build validation failures remain visible with logs.
+- [ ] Confirm a failed install/build can trigger a limited repair attempt.
 - [ ] Start generated-site preview as a separate process.
 - [ ] Stop and start preview again without regeneration.
 - [ ] Reopen a project and start preview again.
+- [ ] Restart the builder app and confirm generated-site previews do not auto-respawn.
 - [ ] Edit form values and regenerate into `v2`.
 - [ ] Replace/remove images during edit and confirm `v2` asset set changes.
 - [ ] Confirm successful `v2` becomes active.
@@ -1109,14 +1155,18 @@ The criteria below reflect the completed shared-runtime pass from Task Packets 0
 - [ ] New projects create `v1`; edit/regenerate creates `v2`, `v3`, and later version folders.
 - [ ] Raw input, manifest, artifacts, generated site code, assets, logs, and preview metadata persist to disk.
 - [ ] Project manifest tracks `activeVersion`, `latestVersion`, and per-version status.
-- [ ] `Ollama` pipeline runs through brief, page plan, story requirements, site-code generation, dependency install, and build validation.
+- [ ] `Ollama` pipeline uses one primary Qwen call for site-code generation, plus repair calls only after install/build failure.
+- [ ] Brief and generation context are built deterministically from validated form input and selected style.
 - [ ] Qwen generates standalone `Next.js` site code under `<version>/site/`.
-- [ ] Generated-site dependencies install per project.
+- [ ] Generated-site dependencies install per project with `npm`.
+- [ ] Successful generation auto-starts preview after validation.
 - [ ] Failed stage is visible when generation, install, build, or preview start fails.
+- [ ] Install/build failures are visible with logs and can trigger a limited repair attempt.
 - [ ] Failed new versions do not replace the active successful version.
 - [ ] `Edit + Regenerate` loads active version form data and creates a new version from edited input.
 - [ ] Users can keep, remove, replace, or add images during edit/regenerate.
 - [ ] Prompting allows images to be placed contextually across the site and does not force a gallery.
 - [ ] A generated-site preview can be started, stopped, and started again as a separate local process.
+- [ ] Builder app restarts do not automatically respawn generated-site previews.
 - [ ] Existing projects can be reopened and preview can be relaunched without regeneration.
 - [ ] No direct generated-code editing, multi-page output, contact-form submission, hosted deployment, in-app export, multiple model providers, or production guardrails are included.

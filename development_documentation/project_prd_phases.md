@@ -18,16 +18,20 @@ Agent-ready Phase 1 execution queue: `development_documentation/phase1_agent_exe
   - Create the project folder and persist inputs before generation starts
   - Create a lightweight project manifest for indexing project metadata and latest build state
   - Build the provider-agnostic LLM connector with Ollama as the first implementation
-  - Generate and persist the normalized site brief
-  - Generate and persist the page plan from the brief and selected style reference
-  - Generate and persist story requirements from the page plan
-  - Generate and persist a standalone `Next.js` site file bundle from the accumulated artifacts
+  - Deterministically generate and persist the normalized site brief from validated form input
+  - Deterministically generate and persist generation context from the brief, selected style, preferences, and image metadata
+  - Make one primary Qwen call to generate and persist a standalone `Next.js` site file bundle
   - Write generated site code under the active version's `site/` folder
-  - Install per-project dependencies for the generated site
+  - Install per-project dependencies for the generated site with `npm`
   - Validate generated sites with install, build, and preview-start checks
+  - Preserve visible install/build failure logs
+  - Run limited Qwen repair attempts for generated-site install/build failures
   - Launch one active generated-site preview at a time as a separate local process
+  - Auto-start preview after successful generation and validation
+  - Do not auto-respawn previews after the builder app restarts
   - Build the project reopen list with lightweight metadata and preview relaunch support
   - Add a `Start Preview` action for generated projects that are not currently running
+  - Add a `Stop Preview` action for running generated-site previews
   - Add form-based `Edit + Regenerate` as the primary regeneration path
   - Store each regeneration in a new version folder such as `v2` or `v3`
   - Expose generation-stage failure states to the user
